@@ -4,11 +4,11 @@ import pygame
 from pygame.locals import *
 from ChessBoard import *
 
-def main_run():
+def main():
     #初始化
     pygame.init()
     # 设置窗口大小 图片大小是460*532 ，
-    window = pygame.display.set_mode((460, 560)) 
+    window = pygame.display.set_mode((460, 560))
     # 设置窗口标题
     if len(sys.argv) > 1:
         pygame.display.set_caption('Chinese Chess black')
@@ -37,25 +37,25 @@ def main_run():
     mainloop = True
 
     # 事件循环
-    while mainloop:  
+    while mainloop:
         # 更新显示
         pygame.display.update()
-        moveResult = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT: #如果关闭窗口就退出
                 mainloop = False
-                print "press pygame.QUIT: %s" % pygame.QUIT
+                print("press pygame.QUIT: %s" % pygame.QUIT)
                 break
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:# 如果按下Esc键也退出
-                    print "press pygame.K_ESCAPE: %s" % pygame.K_ESCAPE
+                    print("press pygame.K_ESCAPE: %s" % pygame.K_ESCAPE)
                     mainloop = False
                     break
 
                 keyname = pygame.key.get_pressed()
                 if keyname[pygame.K_RETURN]:
                     moveResult = chessbord.moveChess(curRow, curCol)
-                
+                    print("press pygame.K_RETURN, moveResult:%s" % moveResult)
+
                 if keyname[pygame.K_LEFT]:
                     curCol -= 1
                     left -= gap
@@ -81,32 +81,20 @@ def main_run():
                     curRow += 1
                     if top >= 465:
                         top = 465
-                        curRow = 9   
+                        curRow = 9
             else:
-                print "press othre key: %s" % event.type
-        
-            #鼠标控制
-            leftMouseButton = pygame.mouse.get_pressed()[0]
-            print "leftMouseButton is: %s" % leftMouseButton
-            if leftMouseButton:
-                (xPos, yPos) = pygame.mouse.get_pos()
-                curRow = (yPos - 15) / gap
-                curCol = (xPos - 4) / gap
-                moveResult = chessbord.moveChess(curRow, curCol)
-                left = curCol * gap + 4
-                top = curRow * gap + 15
-                
-                pass
+                print("press othre key: %s" % event.type)
+
             chessbord.redrawBorad(window)
             chessbord.showTipInfo(window)
             window.blit(curPos,(left,top))
             # 更新显示
             pygame.display.update()
-            
+
     pygame.quit()
     sys.exit()
 
 if __name__ == '__main__':
-    main_run()
-                            
-                            
+    main()
+
+
