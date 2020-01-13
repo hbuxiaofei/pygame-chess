@@ -1,11 +1,11 @@
 #-*- encoding: utf-8 -*-
-
 import sys, string, os
 import pygame
+
 from pygame.locals import *
 
 
-#象棋游戏相关的全局定义变量
+# 象棋游戏相关的全局定义变量
 CHESSMAN_COLOR_RED    = 0
 CHESSMAN_COLOR_BLACK  = 1
 
@@ -19,8 +19,9 @@ CHESSMAN_KIND_PAO      = 5
 CHESSMAN_KIND_BING     = 6
 
 
-# 加载图片
 def load_image(name, colorfilter=0xffffff):
+    ''' 加载图片 '''
+
     try:
         image = pygame.image.load(name)
     except (pygame.error, message):
@@ -35,15 +36,17 @@ def load_image(name, colorfilter=0xffffff):
     return image, image.get_rect()
 
 
-# 加载文字
 def load_font(txt):
+    ''' 加载文字 '''
+
     # 创建一个字体对象
-    #  font = pygame.font.Font(u"simsun.ttc", 20)
+    # font = pygame.font.Font(u"simsun.ttc", 20)
     font = pygame.font.SysFont(None, 25)
+
     # 生成文字
     text = font.render(txt, 1, (255, 0, 0))
+
     # 取得文字区域大小
     textpos = text.get_rect()
 
     return text, textpos
-
