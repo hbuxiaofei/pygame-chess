@@ -29,8 +29,11 @@ class ChessBoard(object):
         3.显示提示信息
     '''
 
-    def __init__(self):
+    def __init__(self, win):
         ''' 初始化 '''
+
+        # 窗口
+        self.window = win
 
         # 走棋步骤: 0-选择棋子  1-移动棋子
         self.moveSteps = 0
@@ -102,12 +105,15 @@ class ChessBoard(object):
                 self.curCol = col
                 self.moveSteps = 1
 
-    def redrawBorad(self, window):
+                left = self.curCol * BOARD_GAP + BOARD_LEFT
+                top = self.curRow * BOARD_GAP + BOARD_TOP
+                self.window.blit(self.markImg, (left, top))
+
+    def redrawBorad(self):
         ''' 根据每个单元格对应的棋子重绘棋盘 '''
 
-        window.fill((0,0,0))
-        window.blit(self.groundImg, (0, 0))
-        self.window = window
+        self.window.fill((0,0,0))
+        self.window.blit(self.groundImg, (0, 0))
 
         # 显示所有棋子
         for key in self.board.keys():
@@ -119,18 +125,18 @@ class ChessBoard(object):
             image, rc = chessman.getImage()
             if None == image:
                 continue
-            window.blit(image, (left, top))
+            self.window.blit(image, (left, top))
             if self.curRow == chessman.row and self.curCol == chessman.col:
-                window.blit(self.markImg, (left, top))
+                self.window.blit(self.markImg, (left, top))
 
-    def showTipInfo(self, window):
+    def showTipInfo(self):
         ''' 在棋盘底部显示提示信息 '''
 
-        # 把文字显示到window上
+        # 把文字显示到窗口上
         text, textpos = load_font(self.tipInfo)
-        # textpos.centerx = window.get_rect().centerx
+        # textpos.centerx = self.window.get_rect().centerx
         textpos = Rect(0, 532, 460, 28)
-        window.blit(text, textpos)
+        self.window.blit(text, textpos)
 
 
     def moveChessColorJudge(self, row, col):

@@ -17,9 +17,9 @@ def main():
     pygame.event.set_allowed([QUIT, MOUSEBUTTONDOWN, MOUSEBUTTONUP])
 
     # 象棋棋盘类
-    chessbord = ChessBoard()
+    chessbord = ChessBoard(window)
 
-    chessbord.redrawBorad(window)
+    chessbord.redrawBorad()
 
     curRow = BOARD_MAX_ROW
     curCol = BOARD_MAX_COL
@@ -39,42 +39,18 @@ def main():
                     print("press pygame.K_ESCAPE")
                     mainloop = False
                     break
-
-                keyname = pygame.key.get_pressed()
-                if keyname[pygame.K_RETURN]:
-                    moveResult = chessbord.moveChess(curRow, curCol)
-                elif keyname[pygame.K_LEFT]:
-                    curCol -= 1
-                    if curCol < 0:
-                        curCol = 0
-                elif keyname[pygame.K_RIGHT]:
-                    curCol += 1
-                    if curCol > BOARD_MAX_COL:
-                        curCol = BOARD_MAX_COL
-                elif keyname[pygame.K_UP]:
-                    curRow -= 1
-                    if curRow < 0:
-                        curRow = 0
-                elif keyname[pygame.K_DOWN]:
-                    curRow += 1
-                    if curRow > BOARD_MAX_ROW:
-                        curRow = BOARD_MAX_ROW
-            else:
-                print("press othre key: %s" % event.type)
-
-            leftMouseButton = pygame.mouse.get_pressed()[0]
-            if leftMouseButton:
+            elif pygame.mouse.get_pressed()[0]:
+                isKeyMove = False
                 (xPos, yPos) = pygame.mouse.get_pos()
                 curRow = (yPos - BOARD_TOP) // BOARD_GAP
                 curCol = (xPos - BOARD_LEFT) // BOARD_GAP
                 moveResult = chessbord.moveChess(curRow, curCol)
+            else:
+                print("press othre key: %s" % event.type)
+                break
 
-            chessbord.redrawBorad(window)
-            chessbord.showTipInfo(window)
-
-            left = curCol * BOARD_GAP + BOARD_LEFT
-            top = curRow * BOARD_GAP + BOARD_TOP
-            window.blit(chessbord.markImg, (left, top))
+            chessbord.redrawBorad()
+            chessbord.showTipInfo()
 
             # 更新显示
             pygame.display.update()
