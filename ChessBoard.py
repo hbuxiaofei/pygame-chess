@@ -1,11 +1,12 @@
 #-*- encoding: utf-8 -*-
-import sys, string, os
+import sys, string, os, copy
 import datetime
 import pygame
 from pygame.locals import *
 
 from ChessGlobal import *
 from Chessman import *
+import Button
 
 
 # 棋盘最大行
@@ -53,6 +54,21 @@ class ChessBoard(object):
         self.groundImg, rc = load_image("./BMP/ground.bmp")
         self.markImg, rc = load_image("./BMP/curPos.bmp", 0xffffff)
         self.resetBorad()
+
+    def reverseBoard(self):
+        board_tmp = copy.deepcopy(self.board)
+        self.board.clear()
+        for key in board_tmp.keys():
+            chessman = board_tmp[key]
+            if chessman == None:
+                continue;
+            row =  BOARD_MAX_ROW - key[0]
+            col = BOARD_MAX_COL - key[1]
+            chessman.row = row
+            chessman.col = col
+            self.board[(row, col)] = chessman
+        self.curRow = BOARD_MAX_ROW - self.curRow
+        self.curCol = BOARD_MAX_COL - self.curCol
 
     def resetBorad(self):
         ''' 重置棋盘 '''
@@ -129,6 +145,8 @@ class ChessBoard(object):
             if self.curRow == chessman.row and self.curCol == chessman.col:
                 self.window.blit(self.markImg, (left, top))
 
+        Button.refresh()
+
     def showTipInfo(self):
         ''' 在棋盘底部显示提示信息 '''
 
@@ -137,7 +155,6 @@ class ChessBoard(object):
         # textpos.centerx = self.window.get_rect().centerx
         textpos = Rect(0, 532, 460, 28)
         self.window.blit(text, textpos)
-
 
     def moveChessColorJudge(self, row, col):
         ''' 走棋颜色判断

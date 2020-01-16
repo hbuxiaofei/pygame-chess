@@ -3,13 +3,14 @@ import sys, string, os, time
 import pygame
 from pygame.locals import *
 from ChessBoard import *
+import Button
 
 
 def main():
     # 初始化
     pygame.init()
     # 设置窗口大小 图片大小是460*532
-    window = pygame.display.set_mode((460, 532 + 28))
+    window = pygame.display.set_mode((460, 532 + 28 + 50))
     # 设置窗口标题
     pygame.display.set_caption('Chinese Chess')
 
@@ -18,6 +19,7 @@ def main():
 
     # 象棋棋盘类
     chessbord = ChessBoard(window)
+    Button.init(window, chessbord)
 
     chessbord.redrawBorad()
 
@@ -39,21 +41,22 @@ def main():
                     print("press pygame.K_ESCAPE")
                     mainloop = False
                     break
-            elif pygame.mouse.get_pressed()[0]:
-                isKeyMove = False
+            elif event.type ==  pygame.MOUSEBUTTONDOWN or event.type ==  pygame.MOUSEBUTTONUP:
                 (xPos, yPos) = pygame.mouse.get_pos()
-                curRow = (yPos - BOARD_TOP) // BOARD_GAP
-                curCol = (xPos - BOARD_LEFT) // BOARD_GAP
-                moveResult = chessbord.moveChess(curRow, curCol)
+                mouse = pygame.mouse.get_pressed()
+                if not mouse[0]:
+                    curRow = (yPos - BOARD_TOP) // BOARD_GAP
+                    curCol = (xPos - BOARD_LEFT) // BOARD_GAP
+                    moveResult = chessbord.moveChess(curRow, curCol)
+                Button.process((xPos, yPos), mouse)
             else:
                 print("press othre key: %s" % event.type)
                 break
 
-            chessbord.redrawBorad()
-            chessbord.showTipInfo()
-
-            # 更新显示
-            pygame.display.update()
+        chessbord.redrawBorad()
+        chessbord.showTipInfo()
+        # 更新显示
+        pygame.display.update()
 
     pygame.quit()
     sys.exit()
