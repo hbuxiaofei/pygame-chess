@@ -1,7 +1,20 @@
 #-*- encoding: utf-8 -*-
 import os
 
-from ChessGlobal import *
+from Chess import Global
+
+# 象棋游戏相关的全局定义变量
+COLOR_RED    = 0
+COLOR_BLACK  = 1
+
+KIND_NONE     = -1  # 表示棋盘该位置没有棋子
+KIND_JU       = 0
+KIND_MA       = 1
+KIND_XIANG    = 2
+KIND_SHI      = 3
+KIND_JIANG    = 4
+KIND_PAO      = 5
+KIND_BING     = 6
 
 
 class Chessman(object):
@@ -22,27 +35,27 @@ class Chessman(object):
         ''' 根据棋子类型和棋子颜色获得棋子图片对象 '''
 
         kind = ""
-        if CHESSMAN_KIND_JU == self.kind:
+        if KIND_JU == self.kind:
             kind = 'ju'
-        if CHESSMAN_KIND_PAO == self.kind:
+        if KIND_PAO == self.kind:
             kind = 'pao'
-        elif CHESSMAN_KIND_MA == self.kind:
+        elif KIND_MA == self.kind:
             kind = 'ma'
-        elif CHESSMAN_KIND_XIANG == self.kind:
+        elif KIND_XIANG == self.kind:
             kind = 'xiang'
-        elif CHESSMAN_KIND_SHI == self.kind:
+        elif KIND_SHI == self.kind:
             kind = 'shi'
-        elif CHESSMAN_KIND_JIANG == self.kind:
+        elif KIND_JIANG == self.kind:
             kind = 'jiang'
-        elif CHESSMAN_KIND_BING == self.kind:
+        elif KIND_BING == self.kind:
             kind = 'bing'
 
         color = 'r'
-        if CHESSMAN_COLOR_BLACK == self.color:
+        if COLOR_BLACK == self.color:
             color = 'b'
 
-        filename = './BMP/' + color + '_' + kind + '.bmp'
-        return load_image(filename)
+        filename = 'images/' + color + '_' + kind + '.bmp'
+        return Global.load_image(filename)
 
     def printInfo(self):
         arrKind = ('ju', 'ma', 'xiang', 'shi', 'jiang', 'pao', 'bing', 'None')
@@ -54,20 +67,20 @@ class Chessman(object):
         ''' 根据棋子类型,当前位置和目标位置判断能否走棋 '''
 
         isSuc = 1
-        if CHESSMAN_KIND_JU == self.kind or CHESSMAN_KIND_PAO == self.kind:
+        if KIND_JU == self.kind or KIND_PAO == self.kind:
             isSuc = (self.row == rowTo) or (self.col == colTo)
-        elif CHESSMAN_KIND_MA == self.kind:
+        elif KIND_MA == self.kind:
             rowGap = abs(self.row - rowTo)
             colGap = abs(self.col - colTo)
             isSuc = rowGap > 0 and colGap > 0 and rowGap + colGap == 3
-        elif CHESSMAN_KIND_XIANG == self.kind:
+        elif KIND_XIANG == self.kind:
             if abs(rowTo - self.row) != 2 or abs(colTo - self.col) != 2:
                 isSuc = 0
             if 4 == self.row  and rowTo > 4:
                 isSuc = 0
             if 5 == self.row and rowTo < 5:
                 isSuc = 0
-        elif CHESSMAN_KIND_SHI == self.kind:
+        elif KIND_SHI == self.kind:
             if abs(rowTo - self.row) != 1 or abs(colTo - self.col) != 1:
                 isSuc = 0
             if colTo < 3 or colTo > 5:
@@ -76,7 +89,7 @@ class Chessman(object):
                 isSuc = 0
             if self.row > 6 and rowTo <6:
                 isSuc = 0
-        elif CHESSMAN_KIND_JIANG == self.kind:
+        elif KIND_JIANG == self.kind:
             if abs(rowTo - self.row) + abs(colTo - self.col) != 1:
                 isSuc = 0
             if colTo < 3 or colTo > 5:
@@ -85,7 +98,7 @@ class Chessman(object):
                 isSuc = 0
             if self.row > 6  and rowTo <= 6:
                 isSuc = 0
-        elif CHESSMAN_KIND_BING == self.kind:
+        elif KIND_BING == self.kind:
             if abs(rowTo - self.row) + abs(colTo - self.col) != 1:
                 isSuc = 0
             if 0 == self.riverCrossed and colTo != self.col:
@@ -99,29 +112,29 @@ if __name__ == "__main__":
 
     ''' 测试用例 '''
 
-    ma = Chessman(CHESSMAN_KIND_MA, CHESSMAN_COLOR_RED, 2, 2)
+    ma = Chessman(KIND_MA, COLOR_RED, 2, 2)
     print("ma: %d == 0" % ma.ChessMoveJudge(1, 2))
     print("ma: %d == 1" % ma.ChessMoveJudge(4, 1))
     print("ma: %d == 0" % ma.ChessMoveJudge(4, 2))
     print("ma: %d == 1" % ma.ChessMoveJudge(4, 3))
 
-    xiang = Chessman(CHESSMAN_KIND_XIANG, CHESSMAN_COLOR_RED, 0, 2)
+    xiang = Chessman(KIND_XIANG, COLOR_RED, 0, 2)
     print("xiang: %d == 1" % xiang.ChessMoveJudge(2, 4))
     print("xiang: %d == 1" % xiang.ChessMoveJudge(2, 0))
     print("xiang: %d == 0" % xiang.ChessMoveJudge(2, 1))
     print("xiang: %d == 0" % xiang.ChessMoveJudge(2, 2))
 
-    shi = Chessman(CHESSMAN_KIND_SHI, CHESSMAN_COLOR_RED, 0, 3)
+    shi = Chessman(KIND_SHI, COLOR_RED, 0, 3)
     print("shi: %d == 1" % shi.ChessMoveJudge(1, 4))
     print("shi: %d == 0" % shi.ChessMoveJudge(1, 5))
     print("shi: %d == 0" % shi.ChessMoveJudge(2, 0))
     print("shi: %d == 0" % shi.ChessMoveJudge(3, 1))
 
-    jiang = Chessman(CHESSMAN_KIND_JIANG, CHESSMAN_COLOR_RED, 0, 4)
+    jiang = Chessman(KIND_JIANG, COLOR_RED, 0, 4)
     print("jiang: %d == 1" % jiang.ChessMoveJudge(0, 5))
     print("jiang: %d == 1" % jiang.ChessMoveJudge(0, 3))
     print("jiang: %d == 1" % jiang.ChessMoveJudge(1, 4))
     print("jiang: %d == 0" % jiang.ChessMoveJudge(1, 5))
 
-    bing = Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_RED, 3, 2)
+    bing = Chessman(KIND_BING, COLOR_RED, 3, 2)
     print("bing: %d == 1" % bing.ChessMoveJudge(4, 2))

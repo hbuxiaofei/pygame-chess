@@ -2,13 +2,30 @@
 import sys, string, os, copy
 import datetime
 import pygame
-from pygame.locals import *
 
-from ChessGlobal import *
-from Chessman import *
-import Button
-import Structure
+from Chess import Base
+from Chess import Global
+from Chess import Button
+from Chess import Structure
 
+# 窗口宽度
+WINDOW_WIDTH = 520
+# 窗口高度
+WINDOW_HEIGHT = 650
+
+# 棋盘宽度
+BOARD_WIDTH = 460
+# 棋盘高度
+BOARD_HEIGHT = 532
+
+# 棋盘坐标
+BOARD_COL = 30
+BOARD_ROW = 30
+
+# 棋盘左间距
+BOARD_LEFT = 5 + BOARD_COL
+# 棋盘上间距
+BOARD_TOP = 15 + BOARD_ROW
 
 # 棋盘最大行
 BOARD_MAX_ROW = 9
@@ -16,10 +33,7 @@ BOARD_MAX_ROW = 9
 BOARD_MAX_COL = 8
 # 棋盘格子间隔
 BOARD_GAP = 50
-# 棋盘左间距
-BOARD_LEFT = 5
-# 棋盘上间距
-BOARD_TOP = 15
+
 
 
 class ChessBoard(object):
@@ -41,7 +55,7 @@ class ChessBoard(object):
         self.moveSteps = 0
 
         # 当前要走棋的棋子颜色,初始化为红色
-        self.curStepColor = CHESSMAN_COLOR_RED
+        self.curStepColor = Base.COLOR_RED
 
         # 行位置
         self.curRow = -1
@@ -55,8 +69,9 @@ class ChessBoard(object):
         # 保存步骤栈
         self.stack = Structure.Stack()
 
-        self.groundImg, rc = load_image("./BMP/ground.bmp")
-        self.markImg, rc = load_image("./BMP/curPos.bmp", 0xffffff)
+        self.bottomImg, rc = Global.load_image("images/bottom.bmp")
+        self.groundImg, rc = Global.load_image("images/ground.bmp")
+        self.markImg, rc = Global.load_image("images/cur_pos.bmp", 0xffffff)
         self.resetBorad()
 
     def reverseBoard(self):
@@ -80,43 +95,43 @@ class ChessBoard(object):
         """ 重置棋盘 """
 
         self.moveSteps = 0
-        self.curStepColor = CHESSMAN_COLOR_RED
+        self.curStepColor = Base.COLOR_RED
         self.curRow = -1
         self.curCol = -1
         self.stack.destroy()
         self.board = {
-                (9, 8):Chessman(CHESSMAN_KIND_JU, CHESSMAN_COLOR_RED,      9, 8),
-                (9, 7):Chessman(CHESSMAN_KIND_MA, CHESSMAN_COLOR_RED,      9, 7),
-                (9, 6):Chessman(CHESSMAN_KIND_XIANG, CHESSMAN_COLOR_RED,   9, 6),
-                (9, 5):Chessman(CHESSMAN_KIND_SHI, CHESSMAN_COLOR_RED,     9, 5),
-                (9, 4):Chessman(CHESSMAN_KIND_JIANG, CHESSMAN_COLOR_RED,   9, 4),
-                (9, 3):Chessman(CHESSMAN_KIND_SHI, CHESSMAN_COLOR_RED,     9, 3),
-                (9, 2):Chessman(CHESSMAN_KIND_XIANG, CHESSMAN_COLOR_RED,   9, 2),
-                (9, 1):Chessman(CHESSMAN_KIND_MA, CHESSMAN_COLOR_RED,      9, 1),
-                (9, 0):Chessman(CHESSMAN_KIND_JU, CHESSMAN_COLOR_RED,      9, 0),
-                (0, 8):Chessman(CHESSMAN_KIND_JU, CHESSMAN_COLOR_BLACK,    0, 8),
-                (0, 7):Chessman(CHESSMAN_KIND_MA, CHESSMAN_COLOR_BLACK,    0, 7),
-                (0, 6):Chessman(CHESSMAN_KIND_XIANG, CHESSMAN_COLOR_BLACK, 0, 6),
-                (0, 5):Chessman(CHESSMAN_KIND_SHI, CHESSMAN_COLOR_BLACK,   0, 5),
-                (0, 4):Chessman(CHESSMAN_KIND_JIANG, CHESSMAN_COLOR_BLACK, 0, 4),
-                (0, 3):Chessman(CHESSMAN_KIND_SHI, CHESSMAN_COLOR_BLACK,   0, 3),
-                (0, 2):Chessman(CHESSMAN_KIND_XIANG, CHESSMAN_COLOR_BLACK, 0, 2),
-                (0, 1):Chessman(CHESSMAN_KIND_MA, CHESSMAN_COLOR_BLACK,    0, 1),
-                (0, 0):Chessman(CHESSMAN_KIND_JU, CHESSMAN_COLOR_BLACK,    0, 0),
-                (7, 7):Chessman(CHESSMAN_KIND_PAO, CHESSMAN_COLOR_RED,     7, 7),
-                (7, 1):Chessman(CHESSMAN_KIND_PAO, CHESSMAN_COLOR_RED,     7, 1),
-                (2, 7):Chessman(CHESSMAN_KIND_PAO, CHESSMAN_COLOR_BLACK,   2, 7),
-                (2, 1):Chessman(CHESSMAN_KIND_PAO, CHESSMAN_COLOR_BLACK,   2, 1),
-                (6, 8):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_RED,    6, 8),
-                (6, 6):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_RED,    6, 6),
-                (6, 4):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_RED,    6, 4),
-                (6, 2):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_RED,    6, 2),
-                (6, 0):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_RED,    6, 0),
-                (3, 8):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_BLACK,  3, 8),
-                (3, 6):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_BLACK,  3, 6),
-                (3, 4):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_BLACK,  3, 4),
-                (3, 2):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_BLACK,  3, 2),
-                (3, 0):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_BLACK,  3, 0),
+                (9, 8):Base.Chessman(Base.KIND_JU, Base.COLOR_RED,      9, 8),
+                (9, 7):Base.Chessman(Base.KIND_MA, Base.COLOR_RED,      9, 7),
+                (9, 6):Base.Chessman(Base.KIND_XIANG, Base.COLOR_RED,   9, 6),
+                (9, 5):Base.Chessman(Base.KIND_SHI, Base.COLOR_RED,     9, 5),
+                (9, 4):Base.Chessman(Base.KIND_JIANG, Base.COLOR_RED,   9, 4),
+                (9, 3):Base.Chessman(Base.KIND_SHI, Base.COLOR_RED,     9, 3),
+                (9, 2):Base.Chessman(Base.KIND_XIANG, Base.COLOR_RED,   9, 2),
+                (9, 1):Base.Chessman(Base.KIND_MA, Base.COLOR_RED,      9, 1),
+                (9, 0):Base.Chessman(Base.KIND_JU, Base.COLOR_RED,      9, 0),
+                (0, 8):Base.Chessman(Base.KIND_JU, Base.COLOR_BLACK,    0, 8),
+                (0, 7):Base.Chessman(Base.KIND_MA, Base.COLOR_BLACK,    0, 7),
+                (0, 6):Base.Chessman(Base.KIND_XIANG, Base.COLOR_BLACK, 0, 6),
+                (0, 5):Base.Chessman(Base.KIND_SHI, Base.COLOR_BLACK,   0, 5),
+                (0, 4):Base.Chessman(Base.KIND_JIANG, Base.COLOR_BLACK, 0, 4),
+                (0, 3):Base.Chessman(Base.KIND_SHI, Base.COLOR_BLACK,   0, 3),
+                (0, 2):Base.Chessman(Base.KIND_XIANG, Base.COLOR_BLACK, 0, 2),
+                (0, 1):Base.Chessman(Base.KIND_MA, Base.COLOR_BLACK,    0, 1),
+                (0, 0):Base.Chessman(Base.KIND_JU, Base.COLOR_BLACK,    0, 0),
+                (7, 7):Base.Chessman(Base.KIND_PAO, Base.COLOR_RED,     7, 7),
+                (7, 1):Base.Chessman(Base.KIND_PAO, Base.COLOR_RED,     7, 1),
+                (2, 7):Base.Chessman(Base.KIND_PAO, Base.COLOR_BLACK,   2, 7),
+                (2, 1):Base.Chessman(Base.KIND_PAO, Base.COLOR_BLACK,   2, 1),
+                (6, 8):Base.Chessman(Base.KIND_BING, Base.COLOR_RED,    6, 8),
+                (6, 6):Base.Chessman(Base.KIND_BING, Base.COLOR_RED,    6, 6),
+                (6, 4):Base.Chessman(Base.KIND_BING, Base.COLOR_RED,    6, 4),
+                (6, 2):Base.Chessman(Base.KIND_BING, Base.COLOR_RED,    6, 2),
+                (6, 0):Base.Chessman(Base.KIND_BING, Base.COLOR_RED,    6, 0),
+                (3, 8):Base.Chessman(Base.KIND_BING, Base.COLOR_BLACK,  3, 8),
+                (3, 6):Base.Chessman(Base.KIND_BING, Base.COLOR_BLACK,  3, 6),
+                (3, 4):Base.Chessman(Base.KIND_BING, Base.COLOR_BLACK,  3, 4),
+                (3, 2):Base.Chessman(Base.KIND_BING, Base.COLOR_BLACK,  3, 2),
+                (3, 0):Base.Chessman(Base.KIND_BING, Base.COLOR_BLACK,  3, 0),
                 }
 
     def backBorad(self):
@@ -146,7 +161,8 @@ class ChessBoard(object):
         ''' 根据每个单元格对应的棋子重绘棋盘 '''
 
         self.window.fill((0,0,0))
-        self.window.blit(self.groundImg, (0, 0))
+        self.window.blit(self.bottomImg, (0, 0))
+        self.window.blit(self.groundImg, (30, 30))
 
         # 显示所有棋子
         for key in self.board.keys():
@@ -168,9 +184,13 @@ class ChessBoard(object):
         ''' 在棋盘底部显示提示信息 '''
 
         # 把文字显示到窗口上
-        text, textpos = load_font(self.tipInfo)
+        text, textpos = Global.load_font(self.tipInfo)
         # textpos.centerx = self.window.get_rect().centerx
-        textpos = Rect(0, 532, 460, 28)
+        textpos = pygame.locals.Rect(BOARD_COL, BOARD_ROW + BOARD_HEIGHT + 50, 460, 28)
+        # 显示内容
+        pygame.draw.rect(self.window, (255,255,255), textpos, 0)
+        # 显示边框
+        #  pygame.draw.rect(self.window, (105,105,105), textpos, 1)
         self.window.blit(text, textpos)
 
     def moveChessColorJudge(self, row, col):
@@ -182,7 +202,7 @@ class ChessBoard(object):
             chessman = self.board[(row, col)]
             if None != chessman:
                 if chessman.color != self.curStepColor:
-                    if CHESSMAN_COLOR_BLACK == chessman.color :
+                    if Base.COLOR_BLACK == chessman.color :
                         self.tipInfo = ('It is red turn')
                     else:
                         self.tipInfo = ('It is black turn')
@@ -218,7 +238,7 @@ class ChessBoard(object):
                 print('rowTo:%d,colTo:%d' % (rowTo, colTo))
 
                 # 蹩马脚判断
-                if CHESSMAN_KIND_MA == chessman.kind:
+                if Base.KIND_MA == chessman.kind:
                     rowError = 0
                     colError = 0
                     if abs(chessman.row - rowTo) == 1:
@@ -231,7 +251,7 @@ class ChessBoard(object):
                         return 0
 
                 # 夹心象判断
-                if CHESSMAN_KIND_XIANG == chessman.kind:
+                if Base.KIND_XIANG == chessman.kind:
                     rowError = (chessman.row + rowTo) / 2
                     colError = (chessman.col + colTo) / 2
                     if (rowError, colError) in self.board.keys() and self.board[(rowError, colError)] != None:
@@ -239,7 +259,7 @@ class ChessBoard(object):
 
                 # 车拦路判断,隔山炮判断
                 bIsHaveChessman = 0
-                if CHESSMAN_KIND_JU == chessman.kind or CHESSMAN_KIND_PAO == chessman.kind:
+                if Base.KIND_JU == chessman.kind or Base.KIND_PAO == chessman.kind:
                     rowLoopMin = 0
                     rowLoopMax = 0
                     colLoopMin = 0
@@ -267,7 +287,7 @@ class ChessBoard(object):
                             if (row, col) in self.board.keys():
                                 if None != self.board[(row, col)]:
                                     bIsHaveChessman = 1
-                                    if CHESSMAN_KIND_PAO == chessman.kind:
+                                    if Base.KIND_PAO == chessman.kind:
                                         if (rowTo, colTo) not in self.board.keys() :
                                             return  0
                                         elif None == self.board[(rowTo, colTo)]:
@@ -278,7 +298,7 @@ class ChessBoard(object):
                                                 return 0
                                     else:
                                         return 0
-                if CHESSMAN_KIND_PAO == chessman.kind:
+                if Base.KIND_PAO == chessman.kind:
                     if (rowTo, colTo) in self.board.keys() :
                         chessmanTemp = self.board[(rowTo, colTo)]
                         if None == chessmanTemp and  1 == bIsHaveChessman:
@@ -286,18 +306,18 @@ class ChessBoard(object):
                         if None != chessmanTemp and 0 == bIsHaveChessman:
                             return 0
                 # 兵:过河
-                if chessman.kind == CHESSMAN_KIND_BING:
+                if chessman.kind == Base.KIND_BING:
                     if (4 == chessman.row and 5 == rowTo) or (5 == chessman.row and 4 == rowTo):
                         chessman.riverCrossed = 1
             else:
-                if CHESSMAN_KIND_JIANG == chessman.kind:
+                if Base.KIND_JIANG == chessman.kind:
                     # 白脸将判断
                     if (rowTo, colTo) not in self.board.keys():
                         return 0
                     chessmanTo = self.board[(rowTo, colTo)]
                     if None == chessmanTo:
                         return 0
-                    if CHESSMAN_KIND_JIANG != chessmanTo.kind:
+                    if Base.KIND_JIANG != chessmanTo.kind:
                         return 0
                 else:
                     return 0
@@ -316,13 +336,13 @@ class ChessBoard(object):
             self.tipInfo = ('last moving chessman: %s,row:%d,col:%d' %  (chessman.printInfo(), rowTo, colTo))
 
             # 换对方下棋
-            if self.curStepColor == CHESSMAN_COLOR_BLACK:
-                self.curStepColor = CHESSMAN_COLOR_RED
+            if self.curStepColor == Base.COLOR_BLACK:
+                self.curStepColor = Base.COLOR_RED
             else:
-                self.curStepColor = CHESSMAN_COLOR_BLACK
+                self.curStepColor = Base.COLOR_BLACK
 
-            if chessmanTo != None and CHESSMAN_KIND_JIANG == chessmanTo.kind:
-                if CHESSMAN_COLOR_BLACK == chessmanTo.color:
+            if chessmanTo != None and Base.KIND_JIANG == chessmanTo.kind:
+                if Base.COLOR_BLACK == chessmanTo.color:
                     self.tipInfo = ('game over,red win!')
                 else :
                     self.tipInfo = ('game over,black win!')

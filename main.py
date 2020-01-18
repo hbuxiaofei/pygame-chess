@@ -2,15 +2,17 @@
 import sys, string, os, time
 import pygame
 from pygame.locals import *
-from ChessBoard import *
-import Button
+
+from Chess import Board
+from Chess import Button
 
 
 def main():
     # 初始化
     pygame.init()
     # 设置窗口大小 图片大小是460*532
-    window = pygame.display.set_mode((460, 532 + 28 + 50))
+    #  window = pygame.display.set_mode((460, 532 + 28 + 50))
+    window = pygame.display.set_mode((Board.WINDOW_WIDTH, Board.WINDOW_HEIGHT))
     # 设置窗口标题
     pygame.display.set_caption('Chinese Chess')
 
@@ -18,7 +20,7 @@ def main():
     pygame.event.set_allowed([QUIT, MOUSEBUTTONDOWN, MOUSEBUTTONUP])
 
     # 象棋棋盘类
-    chessbord = ChessBoard(window)
+    chessbord = Board.ChessBoard(window)
     Button.init(window, chessbord)
 
     chessbord.redrawBorad()
@@ -43,8 +45,8 @@ def main():
                 (xPos, yPos) = pygame.mouse.get_pos()
                 mouse = pygame.mouse.get_pressed()
                 if not mouse[0]:
-                    row = (yPos - BOARD_TOP) // BOARD_GAP
-                    col = (xPos - BOARD_LEFT) // BOARD_GAP
+                    row = (yPos - Board.BOARD_TOP) // Board.BOARD_GAP
+                    col = (xPos - Board.BOARD_LEFT) // Board.BOARD_GAP
                     moveResult = chessbord.moveChess(row, col)
                 Button.process((xPos, yPos), mouse)
             else:

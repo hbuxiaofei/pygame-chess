@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 import pygame
 
+from Chess import Board
 
 button_list = []
 
 # 按钮弹起颜色
-BUTTON_UP_COLOR = (0,255,0)
+BUTTON_UP_COLOR = (238,232,170)
 # 按钮按下颜色
-BUTTON_DOWN_COLOR = (0,200,0)
+BUTTON_DOWN_COLOR = (255,255,224)
 # 按钮边框颜色
-BUTTON_RIM_COLOR = (0,0,255)
+BUTTON_RIM_COLOR = (255,255,255)
 
 # 按钮字符颜色
 BUTTON_TEXT_COLOR = (200,0,0)
@@ -74,16 +75,22 @@ def init(win, board):
     btn_list = get_button_list()
     btn_list.clear()
 
-    # 翻转棋盘按钮
-    btn = GuiButton(win, board, "Reverse", 0, 560, 80, 28, cb_reverse_board, board)
+    # 翻转棋盘按钮 BOARD_COL, BOARD_ROW + BOARD_HEIGHT
+    btn = GuiButton(win, board, "Reverse",
+            Board.BOARD_COL, Board.BOARD_ROW + Board.BOARD_HEIGHT,
+            80, 28, cb_reverse_board, board)
     btn_list.append(btn)
 
     # 重置棋盘按钮
-    btn = GuiButton(win, board, "Reset", 100, 560, 80, 28, cb_reset_board, board)
+    btn = GuiButton(win, board, "Reset",
+            Board.BOARD_COL + 100, Board.BOARD_ROW + Board.BOARD_HEIGHT,
+            80, 28, cb_reset_board, board)
     btn_list.append(btn)
 
     # 回退按钮
-    btn = GuiButton(win, board, "Back", 200, 560, 80, 28, cb_back_board, board)
+    btn = GuiButton(win, board, "Back",
+            Board.BOARD_COL + 200, Board.BOARD_ROW + Board.BOARD_HEIGHT,
+            80, 28, cb_back_board, board)
     btn_list.append(btn)
 
 
