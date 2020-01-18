@@ -7,6 +7,7 @@ from pygame.locals import *
 from ChessGlobal import *
 from Chessman import *
 import Button
+import Structure
 
 
 # 棋盘最大行
@@ -43,19 +44,24 @@ class ChessBoard(object):
         self.curStepColor = CHESSMAN_COLOR_RED
 
         # 行位置
-        self.curRow = BOARD_MAX_ROW
+        self.curRow = -1
 
         # 列位置
-        self.curCol = BOARD_MAX_COL
+        self.curCol = -1
 
         # 提示的文本
         self.tipInfo = ''
+
+        # 保存步骤栈
+        self.stack = Structure.Stack()
 
         self.groundImg, rc = load_image("./BMP/ground.bmp")
         self.markImg, rc = load_image("./BMP/curPos.bmp", 0xffffff)
         self.resetBorad()
 
     def reverseBoard(self):
+        """ 反转棋盘 """
+
         board_tmp = copy.deepcopy(self.board)
         self.board.clear()
         for key in board_tmp.keys():
@@ -71,12 +77,13 @@ class ChessBoard(object):
         self.curCol = BOARD_MAX_COL - self.curCol
 
     def resetBorad(self):
-        ''' 重置棋盘 '''
+        """ 重置棋盘 """
 
         self.moveSteps = 0
         self.curStepColor = CHESSMAN_COLOR_RED
-        self.curRow = BOARD_MAX_ROW
-        self.curCol = BOARD_MAX_COL
+        self.curRow = -1
+        self.curCol = -1
+        self.stack.destroy()
         self.board = {
                 (9, 8):Chessman(CHESSMAN_KIND_JU, CHESSMAN_COLOR_RED,      9, 8),
                 (9, 7):Chessman(CHESSMAN_KIND_MA, CHESSMAN_COLOR_RED,      9, 7),
@@ -111,6 +118,16 @@ class ChessBoard(object):
                 (3, 2):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_BLACK,  3, 2),
                 (3, 0):Chessman(CHESSMAN_KIND_BING, CHESSMAN_COLOR_BLACK,  3, 0),
                 }
+
+    def backBorad(self):
+        """ 回退棋盘 """
+        if self.stack.size() == 1:
+            self.resetBorad()
+        elif self.stack.size() >= 2:
+            self.board.clear()
+            # 回退两步
+            self.stack.pop()
+            self.board = self.stack.pop()
 
     def chessmanChoose(self, row, col):
         ''' 选中棋子 '''
@@ -286,6 +303,9 @@ class ChessBoard(object):
                     return 0
 
             # 成功走棋
+            board_save = copy.deepcopy(self.board)
+            self.stack.push(board_save)
+
             self.board[(rowTo, colTo)] = chessman
             chessman.row = rowTo
             chessman.col = colTo

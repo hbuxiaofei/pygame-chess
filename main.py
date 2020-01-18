@@ -23,8 +23,6 @@ def main():
 
     chessbord.redrawBorad()
 
-    curRow = BOARD_MAX_ROW
-    curCol = BOARD_MAX_COL
     mainloop = True
 
     # 事件循环
@@ -45,9 +43,9 @@ def main():
                 (xPos, yPos) = pygame.mouse.get_pos()
                 mouse = pygame.mouse.get_pressed()
                 if not mouse[0]:
-                    curRow = (yPos - BOARD_TOP) // BOARD_GAP
-                    curCol = (xPos - BOARD_LEFT) // BOARD_GAP
-                    moveResult = chessbord.moveChess(curRow, curCol)
+                    row = (yPos - BOARD_TOP) // BOARD_GAP
+                    col = (xPos - BOARD_LEFT) // BOARD_GAP
+                    moveResult = chessbord.moveChess(row, col)
                 Button.process((xPos, yPos), mouse)
             else:
                 print("press othre key: %s" % event.type)

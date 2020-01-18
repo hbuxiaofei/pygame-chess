@@ -74,12 +74,29 @@ def init(win, board):
     btn_list = get_button_list()
     btn_list.clear()
 
-    # 翻转棋盘
+    # 翻转棋盘按钮
     btn = GuiButton(win, board, "Reverse", 0, 560, 80, 28, cb_reverse_board, board)
+    btn_list.append(btn)
 
+    # 重置棋盘按钮
+    btn = GuiButton(win, board, "Reset", 100, 560, 80, 28, cb_reset_board, board)
+    btn_list.append(btn)
+
+    # 回退按钮
+    btn = GuiButton(win, board, "Back", 200, 560, 80, 28, cb_back_board, board)
     btn_list.append(btn)
 
 
 def cb_reverse_board(board=None):
     if board != None:
         board.reverseBoard()
+
+
+def cb_reset_board(board=None):
+    if board != None:
+        board.resetBorad()
+
+
+def cb_back_board(board=None):
+    if board != None:
+        board.backBorad()
