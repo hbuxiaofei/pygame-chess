@@ -63,6 +63,132 @@ class Chessman(object):
         info = arrColor[self.color] + arrKind[self.kind]
         return info
 
+    def getMovePoints(self):
+        points = []
+        if KIND_JU == self.kind or KIND_PAO == self.kind:
+            row_tmp = self.row - 1
+            while row_tmp >= 0:
+                points.append((row_tmp, self.col))
+                row_tmp = row_tmp - 1
+            row_tmp = self.row + 1
+            while row_tmp <= 9:
+                points.append((row_tmp, self.col))
+                row_tmp = row_tmp + 1
+            col_tmp = self.col - 1
+            while col_tmp >= 0:
+                points.append((self.row, col_tmp))
+                col_tmp = col_tmp - 1
+            col_tmp = self.col + 1
+            while col_tmp <= 8:
+                points.append((self.row, col_tmp))
+                col_tmp = col_tmp + 1
+        elif KIND_MA == self.kind:
+            row_tmp = self.row - 1
+            if row_tmp >= 0:
+                col_tmp = self.col - 2
+                if col_tmp >= 0:
+                    points.append((row_tmp, col_tmp))
+                col_tmp = self.col + 2
+                if col_tmp <= 8:
+                    points.append((row_tmp, col_tmp))
+            row_tmp = self.row + 1
+            if row_tmp <= 9:
+                col_tmp = self.col - 2
+                if col_tmp >= 0:
+                    points.append((row_tmp, col_tmp))
+                col_tmp = self.col + 2
+                if col_tmp <= 8:
+                    points.append((row_tmp, col_tmp))
+            row_tmp = self.row - 2
+            if row_tmp >= 0:
+                col_tmp = self.col - 1
+                if col_tmp >= 0:
+                    points.append((row_tmp, col_tmp))
+                col_tmp = self.col + 1
+                if col_tmp <= 8:
+                    points.append((row_tmp, col_tmp))
+            row_tmp = self.row + 2
+            if row_tmp <= 9:
+                col_tmp = self.col - 1
+                if col_tmp >= 0:
+                    points.append((row_tmp, col_tmp))
+                col_tmp = self.col + 1
+                if col_tmp <= 8:
+                    points.append((row_tmp, col_tmp))
+        elif KIND_XIANG == self.kind:
+            row_tmp = self.row - 2
+            if row_tmp >= 0:
+                col_tmp = self.col - 2
+                if col_tmp >= 0:
+                    points.append((row_tmp, col_tmp))
+                col_tmp = self.col + 2
+                if col_tmp <= 8:
+                    points.append((row_tmp, col_tmp))
+            row_tmp = self.row + 2
+            if row_tmp <= 9:
+                col_tmp = self.col - 2
+                if col_tmp >= 0:
+                    points.append((row_tmp, col_tmp))
+                col_tmp = self.col + 2
+                if col_tmp <= 8:
+                    points.append((row_tmp, col_tmp))
+        elif KIND_SHI == self.kind:
+            row_tmp = self.row - 1
+            if row_tmp >= 0:
+                col_tmp = self.col - 1
+                if col_tmp >= 0:
+                    points.append((row_tmp, col_tmp))
+                col_tmp = self.col + 1
+                if col_tmp <= 8:
+                    points.append((row_tmp, col_tmp))
+            row_tmp = self.row + 1
+            if row_tmp <= 9:
+                col_tmp = self.col - 1
+                if col_tmp >= 0:
+                    points.append((row_tmp, col_tmp))
+                col_tmp = self.col + 1
+                if col_tmp <= 8:
+                    points.append((row_tmp, col_tmp))
+        elif KIND_JIANG == self.kind:
+            row_tmp = self.row - 1
+            if row_tmp >= 0:
+                points.append((row_tmp, self.col))
+            row_tmp = self.row + 1
+            if row_tmp <= 9:
+                points.append((row_tmp, self.col))
+            col_tmp = self.col - 1
+            if col_tmp >= 0:
+                points.append((self.row, col_tmp))
+            col_tmp = self.col + 1
+            if col_tmp <= 8:
+                points.append((self.row, col_tmp))
+        elif KIND_BING == self.kind:
+            if self.riverCrossed == 0:
+                if self.row < 5:
+                    row_tmp = self.row + 1
+                    if row_tmp <= 9:
+                        points.append((row_tmp, self.col))
+                else:
+                    row_tmp = self.row - 1
+                    if row_tmp >= 0:
+                        points.append((row_tmp, self.col))
+            else:
+                if self.row < 5:
+                    row_tmp = self.row - 1
+                    if row_tmp <= 9:
+                        points.append((row_tmp, self.col))
+                else:
+                    row_tmp = self.row + 1
+                    if row_tmp <= 9:
+                        points.append((row_tmp, self.col))
+                col_tmp = self.col - 1
+                if col_tmp >= 0:
+                    points.append((self.row, col_tmp))
+                col_tmp = self.col + 1
+                if col_tmp <= 8:
+                    points.append((self.row, col_tmp))
+        return points
+
     def ChessMoveJudge(self, rowTo, colTo):
         ''' 根据棋子类型,当前位置和目标位置判断能否走棋 '''
 

@@ -72,6 +72,7 @@ class ChessBoard(object):
         self.bottomImg, rc = Global.load_image("images/bottom.bmp")
         self.groundImg, rc = Global.load_image("images/ground.bmp")
         self.markImg, rc = Global.load_image("images/cur_pos.bmp", 0xffffff)
+        self.moveImg, rc = Global.load_image("images/cur_move.bmp", 0xffffff)
         self.resetBorad()
 
     def reverseBoard(self):
@@ -157,6 +158,11 @@ class ChessBoard(object):
                 top = self.curRow * BOARD_GAP + BOARD_TOP
                 self.window.blit(self.markImg, (left, top))
 
+                for pos in self.chessmanGetPoints():
+                    top = pos[0] * BOARD_GAP + BOARD_TOP
+                    left = pos[1] * BOARD_GAP + BOARD_LEFT
+                    self.window.blit(self.moveImg, (left, top))
+
     def redrawBorad(self):
         ''' 根据每个单元格对应的棋子重绘棋盘 '''
 
@@ -209,6 +215,19 @@ class ChessBoard(object):
                     return  0
         return 1
 
+    def chessmanGetPoints(self):
+        if (self.curRow, self.curCol) not in self.board.keys():
+            return None
+        chessman = self.board[(self.curRow, self.curCol)]
+        if chessman == None:
+            return None
+
+        points = []
+        for pos in chessman.getMovePoints():
+            if self.chessmanTryMove(pos[0], pos[1]) == True:
+                points.append(pos)
+        return points
+
     def chessmanTryMove(self, rowTo, colTo):
         if (self.curRow, self.curCol) not in self.board.keys():
             return False
@@ -224,6 +243,7 @@ class ChessBoard(object):
                 return False
 
         if chessman.ChessMoveJudge(rowTo, colTo) == 0:
+            # 白脸将判断
             if Base.KIND_JIANG == chessman.kind:
                 if (rowTo, colTo) not in self.board.keys():
                     return False
@@ -232,6 +252,16 @@ class ChessBoard(object):
                     return False
                 if Base.KIND_JIANG != chessmanTo.kind:
                     return False
+                if colTo != chessman.col:
+                    return False
+                for key in self.board.keys():
+                    chsman = self.board[key]
+                    if chsman == None:
+                        continue
+                    if chsman.col == colTo:
+                        if ((chsman.row > chessman.row and chsman.row < rowTo) or
+                            (chsman.row < chessman.row and chsman.row > rowTo)):
+                                return False
             else:
                 return False
         else:
@@ -282,10 +312,13 @@ class ChessBoard(object):
                     for col in range(colLoopMin, colLoopMax):
                         if (row, col) in self.board.keys():
                             if None != self.board[(row, col)]:
-                                bIsHaveChessman = 1
                                 if Base.KIND_PAO == chessman.kind:
+                                    if bIsHaveChessman == 0:
+                                        bIsHaveChessman = 1
+                                    else:
+                                        return False
                                     if (rowTo, colTo) not in self.board.keys() :
-                                        return  False
+                                        return False
                                     elif None == self.board[(rowTo, colTo)]:
                                         return False
                                     else:
@@ -293,7 +326,7 @@ class ChessBoard(object):
                                         if chessmanTemp.color == chessman.color:
                                             return False
                                 else:
-                                    return 0
+                                    return False
             if Base.KIND_PAO == chessman.kind:
                 if (rowTo, colTo) in self.board.keys() :
                     chessmanTemp = self.board[(rowTo, colTo)]
@@ -315,6 +348,18 @@ class ChessBoard(object):
             self.chessmanChoose(rowTo, colTo)
             return 0
         else:
+            chessman = None
+            if (self.curRow, self.curCol) in self.board.keys():
+                chessman = self.board[(self.curRow, self.curCol)]
+            if chessman == None:
+                return 0
+            chessmanTo = None
+            if (rowTo, colTo) in self.board.keys():
+                chessmanTo = self.board[(rowTo, colTo)]
+                if chessmanTo != None and chessman.color == chessmanTo.color:
+                    self.chessmanChoose(rowTo, colTo)
+                    return 0
+
             # 判断是否能走棋
             if self.chessmanTryMove(rowTo, colTo) == False:
                 return 0
@@ -323,14 +368,13 @@ class ChessBoard(object):
             board_save = copy.deepcopy(self.board)
             self.stack.push(board_save)
 
-            chessman = self.board[(self.curRow, self.curCol)]
-            self.board[(rowTo, colTo)] = chessman
-            chessman.row = rowTo
-            chessman.col = colTo
             # 兵过河
             if chessman.kind == Base.KIND_BING:
                 if (4 == chessman.row and 5 == rowTo) or (5 == chessman.row and 4 == rowTo):
                     chessman.riverCrossed = 1
+            self.board[(rowTo, colTo)] = chessman
+            chessman.row = rowTo
+            chessman.col = colTo
             self.board[(self.curRow, self.curCol)]  = None
             self.curRow = -1
             self.curCol = -1
@@ -343,7 +387,6 @@ class ChessBoard(object):
             else:
                 self.curStepColor = Base.COLOR_BLACK
 
-            chessmanTo = self.board[(rowTo, colTo)]
             if chessmanTo != None and Base.KIND_JIANG == chessmanTo.kind:
                 if Base.COLOR_BLACK == chessmanTo.color:
                     self.tipInfo = ('game over,red win!')

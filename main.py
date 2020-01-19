@@ -31,6 +31,7 @@ def main():
     while mainloop:
         # 更新显示
         pygame.display.update()
+        moveResult = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT: # 如果关闭窗口,退出
                 print("press pygame.QUIT")
@@ -52,11 +53,11 @@ def main():
             else:
                 print("press othre key: %s" % event.type)
                 break
-
-        chessbord.redrawBorad()
-        chessbord.showTipInfo()
-        # 更新显示
-        pygame.display.update()
+        if moveResult == 1:
+            chessbord.redrawBorad()
+            chessbord.showTipInfo()
+            # 更新显示
+            #  pygame.display.update()
 
     pygame.quit()
     sys.exit()
