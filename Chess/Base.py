@@ -227,10 +227,16 @@ class Chessman(object):
         elif KIND_BING == self.kind:
             if abs(rowTo - self.row) + abs(colTo - self.col) != 1:
                 isSuc = 0
-            if 0 == self.riverCrossed and colTo != self.col:
-                isSuc = 0
-            if 1 == self.riverCrossed and ((self.row < 5 and self.row < rowTo ) or (self.row > 5 and self.row > rowTo)):
-                isSuc = 0
+            if 0 == self.riverCrossed:
+                if colTo != self.col:
+                    isSuc = 0
+                if (self.row < 5 and rowTo < self.row):
+                    isSuc = 0
+                if (self.row >= 5 and rowTo > self.row):
+                    isSuc = 0
+            elif 1 == self.riverCrossed:
+                if ((self.row < 5 and self.row < rowTo ) or (self.row >= 5 and self.row > rowTo)):
+                    isSuc = 0
         return isSuc
 
 

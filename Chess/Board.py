@@ -5,13 +5,13 @@ import pygame
 
 from Chess import Base
 from Chess import Global
-from Chess import Button
 from Chess import Structure
+from Chess import Operate
 
 # 窗口宽度
-WINDOW_WIDTH = 520
+WINDOW_WIDTH = 780
 # 窗口高度
-WINDOW_HEIGHT = 650
+WINDOW_HEIGHT = 640
 
 # 棋盘宽度
 BOARD_WIDTH = 460
@@ -70,10 +70,15 @@ class ChessBoard(object):
         self.stack = Structure.Stack()
 
         self.bottomImg, rc = Global.load_image("images/bottom.bmp")
+        self.headerImg, rc = Global.load_image("images/header.bmp")
+        self.footerImg, rc = Global.load_image("images/footer.bmp")
         self.groundImg, rc = Global.load_image("images/ground.bmp")
         self.markImg, rc = Global.load_image("images/cur_pos.bmp", 0xffffff)
         self.moveImg, rc = Global.load_image("images/cur_move.bmp", 0xffffff)
         self.resetBorad()
+
+        # 操作面板
+        self.operatePanel = Operate.Panel(self.window, BOARD_TOP//2, BOARD_WIDTH + BOARD_LEFT)
 
     def reverseBoard(self):
         """ 反转棋盘 """
@@ -158,17 +163,15 @@ class ChessBoard(object):
                 top = self.curRow * BOARD_GAP + BOARD_TOP
                 self.window.blit(self.markImg, (left, top))
 
-                for pos in self.chessmanGetPoints():
-                    top = pos[0] * BOARD_GAP + BOARD_TOP
-                    left = pos[1] * BOARD_GAP + BOARD_LEFT
-                    self.window.blit(self.moveImg, (left, top))
 
     def redrawBorad(self):
         ''' 根据每个单元格对应的棋子重绘棋盘 '''
 
         self.window.fill((0,0,0))
         self.window.blit(self.bottomImg, (0, 0))
+        self.window.blit(self.headerImg, (30, 20))
         self.window.blit(self.groundImg, (30, 30))
+        self.window.blit(self.footerImg, (30, 550))
 
         # 显示所有棋子
         for key in self.board.keys():
@@ -184,7 +187,13 @@ class ChessBoard(object):
             if self.curRow == chessman.row and self.curCol == chessman.col:
                 self.window.blit(self.markImg, (left, top))
 
-        Button.refresh()
+        # 提示可走路径
+        for pos in self.chessmanGetPoints():
+            top = pos[0] * BOARD_GAP + BOARD_TOP
+            left = pos[1] * BOARD_GAP + BOARD_LEFT
+            self.window.blit(self.moveImg, (left, top))
+        # 刷新操作面板
+        self.operatePanel.refresh()
 
     def showTipInfo(self):
         ''' 在棋盘底部显示提示信息 '''
@@ -192,7 +201,7 @@ class ChessBoard(object):
         # 把文字显示到窗口上
         text, textpos = Global.load_font(self.tipInfo)
         # textpos.centerx = self.window.get_rect().centerx
-        textpos = pygame.locals.Rect(BOARD_COL, BOARD_ROW + BOARD_HEIGHT + 50, 460, 28)
+        textpos = pygame.locals.Rect(BOARD_COL, BOARD_ROW + BOARD_HEIGHT + 20, 460, 28)
         # 显示内容
         pygame.draw.rect(self.window, (255,255,255), textpos, 0)
         # 显示边框
@@ -216,16 +225,16 @@ class ChessBoard(object):
         return 1
 
     def chessmanGetPoints(self):
+        points = []
         if (self.curRow, self.curCol) not in self.board.keys():
-            return None
+            return points
         chessman = self.board[(self.curRow, self.curCol)]
         if chessman == None:
-            return None
-
-        points = []
+            return points
         for pos in chessman.getMovePoints():
             if self.chessmanTryMove(pos[0], pos[1]) == True:
                 points.append(pos)
+        print(points)
         return points
 
     def chessmanTryMove(self, rowTo, colTo):

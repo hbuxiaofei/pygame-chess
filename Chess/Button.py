@@ -20,9 +20,8 @@ class GuiButton(object):
     """ 按钮类
     """
 
-    def __init__(self, win, board, text, x, y, w, h, cb=None, arg=None):
+    def __init__(self, win, text, x, y, w, h, cb=None, arg=None):
         self._win = win
-        self._board = board
         self._text = text
         self._x = x
         self._y = y
@@ -56,43 +55,47 @@ class GuiButton(object):
                 self._color = BUTTON_DOWN_COLOR
 
 
+class GuiButtonBox(object):
+    def __init__(self, win, row, col):
+        self._win = win
+        self._row = row
+        self._col = col
+        self._button_list = get_button_list()
+
+    def init(self, board):
+        self._button_list.clear()
+
+        # 翻转棋盘按钮 BOARD_COL, BOARD_ROW + BOARD_HEIGHT
+        btn = GuiButton(self._win, "Reverse",
+                self._col, self._row,
+                101, 28, cb_reverse_board, board)
+        self._button_list.append(btn)
+
+        # 重置棋盘按钮
+        btn = GuiButton(self._win, "Reset",
+                self._col + 116, self._row,
+                101, 28, cb_reset_board, board)
+        self._button_list.append(btn)
+
+        # 回退按钮
+        btn = GuiButton(self._win, "Back",
+                self._col, self._row + 40,
+                101, 28, cb_back_board, board)
+        self._button_list.append(btn)
+
+    def refresh(self):
+        for button in self._button_list:
+            button.refresh()
+
+
+    def process(self, pos, mouse):
+        for button in self._button_list:
+            button.process(pos, mouse)
+
+
 def get_button_list():
     global button_list
     return button_list
-
-
-def refresh():
-    for button in get_button_list():
-        button.refresh()
-
-
-def process(pos, mouse):
-    for button in get_button_list():
-        button.process(pos, mouse)
-
-
-def init(win, board):
-    btn_list = get_button_list()
-    btn_list.clear()
-
-    # 翻转棋盘按钮 BOARD_COL, BOARD_ROW + BOARD_HEIGHT
-    btn = GuiButton(win, board, "Reverse",
-            Board.BOARD_COL, Board.BOARD_ROW + Board.BOARD_HEIGHT,
-            80, 28, cb_reverse_board, board)
-    btn_list.append(btn)
-
-    # 重置棋盘按钮
-    btn = GuiButton(win, board, "Reset",
-            Board.BOARD_COL + 100, Board.BOARD_ROW + Board.BOARD_HEIGHT,
-            80, 28, cb_reset_board, board)
-    btn_list.append(btn)
-
-    # 回退按钮
-    btn = GuiButton(win, board, "Back",
-            Board.BOARD_COL + 200, Board.BOARD_ROW + Board.BOARD_HEIGHT,
-            80, 28, cb_back_board, board)
-    btn_list.append(btn)
-
 
 def cb_reverse_board(board=None):
     if board != None:

@@ -4,7 +4,7 @@ import pygame
 from pygame.locals import *
 
 from Chess import Board
-from Chess import Button
+from Chess import Operate
 
 
 def main():
@@ -21,7 +21,9 @@ def main():
 
     # 象棋棋盘类
     chessbord = Board.ChessBoard(window)
-    Button.init(window, chessbord)
+
+    # 操作面板按钮初始化
+    chessbord.operatePanel.button_init(chessbord)
 
     chessbord.redrawBorad()
 
@@ -32,32 +34,32 @@ def main():
         # 更新显示
         pygame.display.update()
         moveResult = 0
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: # 如果关闭窗口,退出
-                print("press pygame.QUIT")
+
+        # 等待并从队列中获取一个事件
+        event = pygame.event.wait()
+
+        if event.type == pygame.QUIT: # 如果关闭窗口,退出
+            print("press pygame.QUIT")
+            mainloop = False
+            break
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE: # 如果按下Esc键,退出
+                print("press pygame.K_ESCAPE")
                 mainloop = False
                 break
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE: # 如果按下Esc键,退出
-                    print("press pygame.K_ESCAPE")
-                    mainloop = False
-                    break
-            elif event.type ==  pygame.MOUSEBUTTONDOWN or event.type ==  pygame.MOUSEBUTTONUP:
-                (xPos, yPos) = pygame.mouse.get_pos()
-                mouse = pygame.mouse.get_pressed()
-                if not mouse[0]:
-                    row = (yPos - Board.BOARD_TOP) // Board.BOARD_GAP
-                    col = (xPos - Board.BOARD_LEFT) // Board.BOARD_GAP
-                    moveResult = chessbord.moveChess(row, col)
-                Button.process((xPos, yPos), mouse)
-            else:
-                print("press othre key: %s" % event.type)
-                break
-        if moveResult == 1:
-            chessbord.redrawBorad()
-            chessbord.showTipInfo()
-            # 更新显示
-            #  pygame.display.update()
+        elif event.type ==  pygame.MOUSEBUTTONDOWN or event.type ==  pygame.MOUSEBUTTONUP:
+            (xPos, yPos) = pygame.mouse.get_pos()
+            mouse = pygame.mouse.get_pressed()
+            if not mouse[0]:
+                row = (yPos - Board.BOARD_TOP) // Board.BOARD_GAP
+                col = (xPos - Board.BOARD_LEFT) // Board.BOARD_GAP
+                moveResult = chessbord.moveChess(row, col)
+            chessbord.operatePanel.button_process((xPos, yPos), mouse)
+        else:
+            print("press othre key: %s" % event.type)
+
+        chessbord.redrawBorad()
+        chessbord.showTipInfo()
 
     pygame.quit()
     sys.exit()
