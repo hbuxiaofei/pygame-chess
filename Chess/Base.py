@@ -16,6 +16,16 @@ KIND_JIANG    = 4
 KIND_PAO      = 5
 KIND_BING     = 6
 
+chessman_dict = {
+        KIND_JU: "C",
+        KIND_MA: "M",
+        KIND_XIANG: "X",
+        KIND_SHI: "S",
+        KIND_JIANG: "J",
+        KIND_PAO: "P",
+        KIND_BING: "Z",
+        }
+
 
 class Chessman(object):
     ''' 棋子基类

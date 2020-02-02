@@ -2,6 +2,7 @@
 import pygame
 
 from Chess import Board
+from ai import value as ai_value
 
 button_list = []
 
@@ -13,7 +14,7 @@ BUTTON_DOWN_COLOR = (255,255,224)
 BUTTON_RIM_COLOR = (255,255,255)
 
 # 按钮字符颜色
-BUTTON_TEXT_COLOR = (200,0,0)
+BUTTON_TEXT_COLOR = (54,54,54)
 
 
 class GuiButton(object):
@@ -73,7 +74,7 @@ class GuiButtonBox(object):
 
         # 重置棋盘按钮
         btn = GuiButton(self._win, "Reset",
-                self._col + 116, self._row,
+                self._col + 117, self._row,
                 101, 28, cb_reset_board, board)
         self._button_list.append(btn)
 
@@ -81,6 +82,12 @@ class GuiButtonBox(object):
         btn = GuiButton(self._win, "Back",
                 self._col, self._row + 40,
                 101, 28, cb_back_board, board)
+        self._button_list.append(btn)
+
+        # 提示按钮
+        btn = GuiButton(self._win, "Prompt",
+                self._col + 117, self._row + 40,
+                101, 28, cb_back_prompt, board)
         self._button_list.append(btn)
 
     def refresh(self):
@@ -110,3 +117,14 @@ def cb_reset_board(board=None):
 def cb_back_board(board=None):
     if board != None:
         board.backBorad()
+
+def cb_back_prompt(board=None):
+    if board != None:
+        print("Prompt call ...")
+        board_fmt = board.formatBoard()
+        value_all = ai_value.chessman_get_value_all(board_fmt)
+
+        for i in range(10):
+            print(board_fmt[i])
+
+        print(value_all)

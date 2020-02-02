@@ -97,6 +97,19 @@ class ChessBoard(object):
         self.curRow = BOARD_MAX_ROW - self.curRow
         self.curCol = BOARD_MAX_COL - self.curCol
 
+    def formatBoard(self):
+        board_fmt = [[0] * 9 for i in range(10)]
+
+        for key in self.board.keys():
+            chessman = self.board[key]
+            if chessman == None:
+                continue;
+            kind  = Base.chessman_dict[chessman.kind]
+            if chessman.color != Base.COLOR_RED:
+                kind = kind.lower()
+            board_fmt[key[0]][key[1]] = kind
+        return board_fmt
+
     def resetBorad(self):
         """ 重置棋盘 """
 
