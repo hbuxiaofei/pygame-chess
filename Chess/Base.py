@@ -211,42 +211,42 @@ class Chessman(object):
             isSuc = rowGap > 0 and colGap > 0 and rowGap + colGap == 3
         elif KIND_XIANG == self.kind:
             if abs(rowTo - self.row) != 2 or abs(colTo - self.col) != 2:
-                isSuc = 0
+                return 0
             if 4 == self.row  and rowTo > 4:
-                isSuc = 0
+                return 0
             if 5 == self.row and rowTo < 5:
-                isSuc = 0
+                return 0
         elif KIND_SHI == self.kind:
             if abs(rowTo - self.row) != 1 or abs(colTo - self.col) != 1:
-                isSuc = 0
+                return 0
             if colTo < 3 or colTo > 5:
-                isSuc = 0
+                return 0
             if self.row < 3 and rowTo >= 3:
-                isSuc = 0
+                return 0
             if self.row > 6 and rowTo <6:
-                isSuc = 0
+                return 0
         elif KIND_JIANG == self.kind:
             if abs(rowTo - self.row) + abs(colTo - self.col) != 1:
-                isSuc = 0
+                return 0
             if colTo < 3 or colTo > 5:
-                isSuc = 0
+                return 0
             if self.row < 3 and rowTo >= 3:
-                isSuc = 0
+                return 0
             if self.row > 6  and rowTo <= 6:
-                isSuc = 0
+                return 0
         elif KIND_BING == self.kind:
             if abs(rowTo - self.row) + abs(colTo - self.col) != 1:
-                isSuc = 0
+                return 0
             if 0 == self.riverCrossed:
                 if colTo != self.col:
-                    isSuc = 0
+                    return 0
                 if (self.row < 5 and rowTo < self.row):
-                    isSuc = 0
+                    return 0
                 if (self.row >= 5 and rowTo > self.row):
-                    isSuc = 0
+                    return 0
             elif 1 == self.riverCrossed:
                 if ((self.row < 5 and self.row < rowTo ) or (self.row >= 5 and self.row > rowTo)):
-                    isSuc = 0
+                    return 0
         return isSuc
 
 

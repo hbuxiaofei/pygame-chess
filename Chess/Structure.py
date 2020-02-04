@@ -35,8 +35,10 @@ class TreeNode(object):
 
     def __init__(self, data):
         self._deep = 0
+        self._path = []
         self._data = data
         self._children = []
+        self._parent = None
 
     def get_data(self):
         return self._data
@@ -50,11 +52,27 @@ class TreeNode(object):
     def get_child(self):
         return self._children
 
+    def set_parent(self, node):
+        self._parent = node
+
+    def get_parent(self):
+        return self._parent
+
+    def set_path(self, path):
+        self._path = path
+
+    def get_path(self):
+        return self._path
+
     def add(self, node):
         if len(self._children) >= self.MAX_CHILD_LIST:
             return False
         else:
             node.set_deep(self._deep + 1)
+            node.set_parent(self)
+            length = len(self._children)
+            path = self.get_path()
+            node.set_path(path + [length+1])
             self._children.append(node)
 
 
@@ -110,12 +128,45 @@ class MultiTree(object):
             for child in node.get_child():
                 q.put(child)
 
+    def get_height(self):
+        height = 0
+        def travel_func(node):
+            nonlocal height
+            length = len(node.get_child())
+            if length > height:
+                height = length
+        self.travel(func=travel_func)
+        return height
+
+    def get_nodelist_by_deep(self, deep):
+        """
+            通过队列实现非递归层次遍历
+        """
+        nodelist = []
+
+        node = self._head
+        q = queue.Queue()
+        q.put(node)
+        is_enable_put = True
+        while not q.empty():
+            node = q.get()
+            if node.get_deep() == deep:
+                nodelist.append(node)
+            if is_enable_put:
+                for child in node.get_child():
+                    if child.get_deep() <= deep:
+                        q.put(child)
+                    else:
+                        is_enable_put = False
+
+        return nodelist
+
 
 def test_MultiTree():
     path = []
     mtree = MultiTree()
     node = mtree.get_head()
-    print(path, ":%s" % node.get_data())
+    print(path, node.get_path(), ":%s" % node.get_data())
 
     path = []
     mtree.insert(path, "1-1")
@@ -143,11 +194,26 @@ def test_MultiTree():
 
     path = [1,2,2]
     node = mtree.search(path)
-    print(path, ":%s\n\n" % node.get_data())
+    print("child: ", path, node.get_path(), ":%s" % node.get_data())
+    node = node.get_parent()
+    path.pop()
+    print("parent: ", path, node.get_path(), ":%s\n\n" % node.get_data())
 
+    print("height:", mtree.get_height())
     def travel_func(node):
         print("deep:%d  data:%s" % (node.get_deep(), node.get_data()))
     mtree.travel(func=travel_func)
+
+    print("\n\ndeep==0")
+    nodelist = mtree.get_nodelist_by_deep(0)
+    for node in nodelist:
+        print("deep:%d  data:%s" % (node.get_deep(), node.get_data()))
+
+    print("\n\ndeep==2")
+    nodelist = mtree.get_nodelist_by_deep(2)
+    for node in nodelist:
+        print("deep:%d  data:%s" % (node.get_deep(), node.get_data()))
+
 
 
 if __name__ == "__main__":

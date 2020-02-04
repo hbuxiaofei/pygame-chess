@@ -35,6 +35,43 @@ BOARD_MAX_COL = 8
 BOARD_GAP = 50
 
 
+class ChessWindow(object):
+    def __init__(self):
+        ''' 初始化 '''
+        # 窗口
+        self.window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.bottomImg, rc = Global.load_image("images/bottom.bmp")
+        self.headerImg, rc = Global.load_image("images/header.bmp")
+        self.footerImg, rc = Global.load_image("images/footer.bmp")
+        self.groundImg, rc = Global.load_image("images/ground.bmp")
+        self.markImg, rc = Global.load_image("images/cur_pos.bmp", 0xffffff)
+        self.moveImg, rc = Global.load_image("images/cur_move.bmp", 0xffffff)
+
+        # 操作面板
+        self.operatePanel = Operate.Panel(self.window, BOARD_TOP//2, BOARD_WIDTH + BOARD_LEFT)
+
+        # 提示的文本
+        self.tipInfo = ''
+
+        # 保存走棋步骤
+        self.stack = Structure.Stack()
+
+    def backBorad(self, chessboard):
+        """ 回退棋盘 """
+        if self.stack.size() == 1:
+            chessboard.resetBorad()
+        elif self.stack.size() >= 2:
+            # 回退两步
+            self.stack.pop()
+            chessboard.board = self.stack.pop()
+
+    def saveBorad(self, board):
+        board_save = copy.deepcopy(board)
+        self.stack.push(board_save)
+
+    def resetWindow(self):
+        self.stack.destroy()
+
 
 class ChessBoard(object):
     ''' 象棋棋盘类
@@ -42,14 +79,10 @@ class ChessBoard(object):
     操作:
         1.走棋
         2.重绘棋盘
-        3.显示提示信息
     '''
 
-    def __init__(self, win):
+    def __init__(self):
         ''' 初始化 '''
-
-        # 窗口
-        self.window = win
 
         # 走棋步骤: 0-选择棋子  1-移动棋子
         self.moveSteps = 0
@@ -63,22 +96,8 @@ class ChessBoard(object):
         # 列位置
         self.curCol = -1
 
-        # 提示的文本
-        self.tipInfo = ''
-
-        # 保存步骤栈
-        self.stack = Structure.Stack()
-
-        self.bottomImg, rc = Global.load_image("images/bottom.bmp")
-        self.headerImg, rc = Global.load_image("images/header.bmp")
-        self.footerImg, rc = Global.load_image("images/footer.bmp")
-        self.groundImg, rc = Global.load_image("images/ground.bmp")
-        self.markImg, rc = Global.load_image("images/cur_pos.bmp", 0xffffff)
-        self.moveImg, rc = Global.load_image("images/cur_move.bmp", 0xffffff)
+        # 棋盘重置
         self.resetBorad()
-
-        # 操作面板
-        self.operatePanel = Operate.Panel(self.window, BOARD_TOP//2, BOARD_WIDTH + BOARD_LEFT)
 
     def reverseBoard(self):
         """ 反转棋盘 """
@@ -117,7 +136,6 @@ class ChessBoard(object):
         self.curStepColor = Base.COLOR_RED
         self.curRow = -1
         self.curCol = -1
-        self.stack.destroy()
         self.board = {
                 (9, 8):Base.Chessman(Base.KIND_JU, Base.COLOR_RED,      9, 8),
                 (9, 7):Base.Chessman(Base.KIND_MA, Base.COLOR_RED,      9, 7),
@@ -153,17 +171,7 @@ class ChessBoard(object):
                 (3, 0):Base.Chessman(Base.KIND_BING, Base.COLOR_BLACK,  3, 0),
                 }
 
-    def backBorad(self):
-        """ 回退棋盘 """
-        if self.stack.size() == 1:
-            self.resetBorad()
-        elif self.stack.size() >= 2:
-            self.board.clear()
-            # 回退两步
-            self.stack.pop()
-            self.board = self.stack.pop()
-
-    def chessmanChoose(self, row, col):
+    def chessmanChoose(self, win, row, col):
         ''' 选中棋子 '''
 
         if row >= 0 and col >= 0 and (row, col) in self.board.keys():
@@ -174,17 +182,17 @@ class ChessBoard(object):
 
                 left = self.curCol * BOARD_GAP + BOARD_LEFT
                 top = self.curRow * BOARD_GAP + BOARD_TOP
-                self.window.blit(self.markImg, (left, top))
+                win.window.blit(win.markImg, (left, top))
 
 
-    def redrawBorad(self):
+    def redrawBorad(self, win):
         ''' 根据每个单元格对应的棋子重绘棋盘 '''
 
-        self.window.fill((0,0,0))
-        self.window.blit(self.bottomImg, (0, 0))
-        self.window.blit(self.headerImg, (30, 20))
-        self.window.blit(self.groundImg, (30, 30))
-        self.window.blit(self.footerImg, (30, 550))
+        win.window.fill((0,0,0))
+        win.window.blit(win.bottomImg, (0, 0))
+        win.window.blit(win.headerImg, (30, 20))
+        win.window.blit(win.groundImg, (30, 30))
+        win.window.blit(win.footerImg, (30, 550))
 
         # 显示所有棋子
         for key in self.board.keys():
@@ -196,32 +204,32 @@ class ChessBoard(object):
             image, rc = chessman.getImage()
             if None == image:
                 continue
-            self.window.blit(image, (left, top))
+            win.window.blit(image, (left, top))
             if self.curRow == chessman.row and self.curCol == chessman.col:
-                self.window.blit(self.markImg, (left, top))
+                win.window.blit(win.markImg, (left, top))
 
         # 提示可走路径
         for pos in self.chessmanGetPoints():
             top = pos[0] * BOARD_GAP + BOARD_TOP
             left = pos[1] * BOARD_GAP + BOARD_LEFT
-            self.window.blit(self.moveImg, (left, top))
+            win.window.blit(win.moveImg, (left, top))
         # 刷新操作面板
-        self.operatePanel.refresh()
+        win.operatePanel.refresh()
 
-    def showTipInfo(self):
+    def showTipInfo(self, win):
         ''' 在棋盘底部显示提示信息 '''
 
         # 把文字显示到窗口上
-        text, textpos = Global.load_font(self.tipInfo)
-        # textpos.centerx = self.window.get_rect().centerx
+        text, textpos = Global.load_font(win.tipInfo)
+        # textpos.centerx = win.window.get_rect().centerx
         textpos = pygame.locals.Rect(BOARD_COL, BOARD_ROW + BOARD_HEIGHT + 20, 460, 28)
         # 显示内容
-        pygame.draw.rect(self.window, (255,255,255), textpos, 0)
+        pygame.draw.rect(win.window, (255,255,255), textpos, 0)
         # 显示边框
-        #  pygame.draw.rect(self.window, (105,105,105), textpos, 1)
-        self.window.blit(text, textpos)
+        #  pygame.draw.rect(win.window, (105,105,105), textpos, 1)
+        win.window.blit(text, textpos)
 
-    def moveChessColorJudge(self, row, col):
+    def moveChessColorJudge(self, win,row, col):
         ''' 走棋颜色判断
         判断当前选中棋子是否和允许下的棋子颜色相同,不同不允许走棋
         '''
@@ -231,9 +239,9 @@ class ChessBoard(object):
             if None != chessman:
                 if chessman.color != self.curStepColor:
                     if Base.COLOR_BLACK == chessman.color :
-                        self.tipInfo = ('It is red turn')
+                        win.tipInfo = ('It is red turn')
                     else:
-                        self.tipInfo = ('It is black turn')
+                        win.tipInfo = ('It is black turn')
                     return  0
         return 1
 
@@ -247,7 +255,7 @@ class ChessBoard(object):
         for pos in chessman.getMovePoints():
             if self.chessmanTryMove(pos[0], pos[1]) == True:
                 points.append(pos)
-        print(points)
+        #  print(points)
         return points
 
     def chessmanTryMove(self, rowTo, colTo):
@@ -358,16 +366,16 @@ class ChessBoard(object):
                         return False
         return True
 
-    def moveChess(self, rowTo, colTo):
+    def moveChess(self, win, rowTo, colTo):
         ''' 走棋判断,完成走棋,重绘棋盘 '''
 
-        if 0 == self.moveChessColorJudge(rowTo, colTo) and 0 == self.moveSteps:
+        if 0 == self.moveChessColorJudge(win, rowTo, colTo) and 0 == self.moveSteps:
             # 该对方走棋
             return 0
 
         if 0 == self.moveSteps:
             # 选择棋子
-            self.chessmanChoose(rowTo, colTo)
+            self.chessmanChoose(win, rowTo, colTo)
             return 0
         else:
             chessman = None
@@ -379,29 +387,31 @@ class ChessBoard(object):
             if (rowTo, colTo) in self.board.keys():
                 chessmanTo = self.board[(rowTo, colTo)]
                 if chessmanTo != None and chessman.color == chessmanTo.color:
-                    self.chessmanChoose(rowTo, colTo)
+                    self.chessmanChoose(win, rowTo, colTo)
                     return 0
+
 
             # 判断是否能走棋
             if self.chessmanTryMove(rowTo, colTo) == False:
                 return 0
 
             # 走棋
-            board_save = copy.deepcopy(self.board)
-            self.stack.push(board_save)
+            win.saveBorad(self.board)
+
 
             # 兵过河
             if chessman.kind == Base.KIND_BING:
                 if (4 == chessman.row and 5 == rowTo) or (5 == chessman.row and 4 == rowTo):
                     chessman.riverCrossed = 1
-            self.board[(rowTo, colTo)] = chessman
             chessman.row = rowTo
             chessman.col = colTo
-            self.board[(self.curRow, self.curCol)]  = None
+            self.board[(rowTo, colTo)] = chessman
+
+            self.board.pop((self.curRow, self.curCol))
             self.curRow = -1
             self.curCol = -1
             self.moveSteps = 0
-            self.tipInfo = ('last moving chessman: %s,row:%d,col:%d' %  (chessman.printInfo(), rowTo, colTo))
+            win.tipInfo = ('last moving chessman: %s,row:%d,col:%d' %  (chessman.printInfo(), rowTo, colTo))
 
             # 换对方下棋
             if self.curStepColor == Base.COLOR_BLACK:
@@ -411,9 +421,27 @@ class ChessBoard(object):
 
             if chessmanTo != None and Base.KIND_JIANG == chessmanTo.kind:
                 if Base.COLOR_BLACK == chessmanTo.color:
-                    self.tipInfo = ('game over,red win!')
+                    win.tipInfo = ('game over,red win!')
                 else :
-                    self.tipInfo = ('game over,black win!')
+                    win.tipInfo = ('game over,black win!')
                 self.resetBorad()
 
             return 1
+
+
+def get_all_possible_steps(chessboard):
+    points = {}
+    chessboard_copy = copy.deepcopy(chessboard)
+
+    for (row, col) in chessboard_copy.board.keys():
+        chessman = chessboard_copy.board[(row, col)]
+        if None != chessman:
+            if chessman.color == chessboard_copy.curStepColor:
+                points[(row, col)] = None
+
+    if len(points):
+        for (row, col) in points.keys():
+            chessboard_copy.curRow = row
+            chessboard_copy.curCol = col
+            points[(row, col)] = chessboard_copy.chessmanGetPoints()
+    return points

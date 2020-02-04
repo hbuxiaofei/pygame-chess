@@ -12,20 +12,24 @@ def main():
     pygame.init()
     # 设置窗口大小 图片大小是460*532
     #  window = pygame.display.set_mode((460, 532 + 28 + 50))
-    window = pygame.display.set_mode((Board.WINDOW_WIDTH, Board.WINDOW_HEIGHT))
+    #  window = pygame.display.set_mode((Board.WINDOW_WIDTH, Board.WINDOW_HEIGHT))
     # 设置窗口标题
     pygame.display.set_caption('Chinese Chess')
 
     pygame.event.set_blocked([MOUSEMOTION])
     pygame.event.set_allowed([QUIT, MOUSEBUTTONDOWN, MOUSEBUTTONUP])
 
+    # 窗口
+    chesswindow = Board.ChessWindow()
+
     # 象棋棋盘类
-    chessbord = Board.ChessBoard(window)
+    chessbord = Board.ChessBoard()
 
     # 操作面板按钮初始化
-    chessbord.operatePanel.button_init(chessbord)
+    args = {"window": chesswindow, "board": chessbord}
+    chesswindow.operatePanel.button_init(args)
 
-    chessbord.redrawBorad()
+    chessbord.redrawBorad(chesswindow)
 
     mainloop = True
 
@@ -53,13 +57,14 @@ def main():
             if not mouse[0]:
                 row = (yPos - Board.BOARD_TOP) // Board.BOARD_GAP
                 col = (xPos - Board.BOARD_LEFT) // Board.BOARD_GAP
-                moveResult = chessbord.moveChess(row, col)
-            chessbord.operatePanel.button_process((xPos, yPos), mouse)
+                if (row >= 0  and row <= 9) and (col >= 0 and col <= 8): # 鼠标点击在棋盘内
+                    moveResult = chessbord.moveChess(chesswindow, row, col)
+            chesswindow.operatePanel.button_process((xPos, yPos), mouse)
         else:
             print("press othre key: %s" % event.type)
 
-        chessbord.redrawBorad()
-        chessbord.showTipInfo()
+        chessbord.redrawBorad(chesswindow)
+        chessbord.showTipInfo(chesswindow)
 
     pygame.quit()
     sys.exit()
