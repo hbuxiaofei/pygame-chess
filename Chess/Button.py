@@ -2,6 +2,7 @@
 import sys
 import pygame
 import copy
+import random
 
 from Chess import Board
 from Chess import Base
@@ -129,115 +130,120 @@ def cb_back_prompt(args=None):
         board = args["board"]
         window = args["window"]
 
-        board_fmt = args["board"].formatBoard()
-        value_all = ai_value.chessman_get_value_all(board_fmt)
+        # 保存当前局面为根节点
+        chessboard_copy = copy.deepcopy(board)
+        mtree = Structure.MultiTree(chessboard_copy)
+        mtree_head = mtree.get_head()
 
-        for i in range(10):
-            print(board_fmt[i])
-
-        print(value_all)
-
-        path = []
-        board_copy = copy.deepcopy(board)
-        mtree = Structure.MultiTree(board_copy)
-        node = mtree.get_head()
-
-        calc_deep = 2
-        for deep in range(calc_deep):
+        # 保存步长深度所有走法
+        step_deep = 1
+        for deep in range(step_deep):
             nodelist = mtree.get_nodelist_by_deep(deep)
             for node in nodelist:
                 chessboard = node.get_data()
                 points = Board.get_all_possible_steps(chessboard)
                 for cur_pos in points.keys():
                     for to_pos in points[cur_pos]:
-                        board_copy = copy.deepcopy(node.get_data())
-                        board_copy.chessmanChoose(window, cur_pos[0], cur_pos[1])
-                        board_copy.moveChess(window, to_pos[0], to_pos[1])
-                        child = Structure.TreeNode(board_copy)
-                        #  if cur_pos == (9, 8):
+                        chessboard_copy = copy.deepcopy(node.get_data())
+                        chessboard_copy.aiChessmanChoose(cur_pos[0], cur_pos[1])
+                        chessboard_copy.aiMoveChess(to_pos[0], to_pos[1])
+                        child = Structure.TreeNode(chessboard_copy)
                         node.add(child)
 
-        nodelist = mtree.get_nodelist_by_deep(calc_deep)
-        max_value = -sys.maxsize
-        min_value = sys.maxsize
-        maxmin = {"max":[max_value], "min":[min_value]}
-        for node in nodelist:
+        # maxmin计算深度
+        calc_deep = 6
+        for deep in range(calc_deep):
+            nodelist = mtree.get_nodelist_by_deep(deep+step_deep)
+            for node in nodelist:
+                chessboard = node.get_data()
+                curColor = chessboard.curStepColor
+                points = Board.get_all_possible_steps(chessboard)
+
+                chessboard_child_list = []
+                max_value = -sys.maxsize
+                min_value = sys.maxsize
+                max_value_last = -sys.maxsize
+                min_value_last = sys.maxsize
+                # 遍历所有子粒
+                for cur_pos in points.keys():
+                    # 遍历每个子粒的所有走法
+                    for to_pos in points[cur_pos]:
+                        chessboard_copy = copy.deepcopy(node.get_data())
+                        chessboard_copy.aiChessmanChoose(cur_pos[0], cur_pos[1])
+                        chessboard_copy.aiMoveChess(to_pos[0], to_pos[1])
+
+                        board_fmt = chessboard_copy.formatBoard()
+                        value_all = ai_value.chessman_get_value_all(board_fmt)
+
+                        value_tmp = value_all[0] - value_all[1]
+                        if curColor == Base.COLOR_RED:
+                            if value_tmp >= max_value:
+                                if value_tmp == max_value:
+                                    chessboard_child_list.append(chessboard_copy)
+                                else:
+                                    chessboard_child_list = [chessboard_copy]
+                                max_value = value_tmp
+                        else:
+                            if value_tmp <= min_value:
+                                if value_tmp == min_value:
+                                    chessboard_child_list.append(chessboard_copy)
+                                else:
+                                    chessboard_child_list = [chessboard_copy]
+                                min_value =value_tmp
+
+                for chessboard_child in chessboard_child_list:
+                    child = Structure.TreeNode(chessboard_child)
+                    node.add(child)
+                max_value_last = max_value
+                min_value_last = min_value
+
+        nodelist = []
+        bottom_nodelist = mtree.get_nodelist_by_deep(calc_deep+step_deep)
+        head_color = mtree_head.get_data().curStepColor
+        for node in bottom_nodelist:
             chessboard = node.get_data()
             board_fmt = chessboard.formatBoard()
             value_all = ai_value.chessman_get_value_all(board_fmt)
             value_tmp = value_all[0] - value_all[1]
-            if value_tmp >= max_value:
-                if value_tmp == max_value:
-                    maxmin["max"].append(node.get_path())
-                else:
-                    maxmin["max"] = [value_tmp, node.get_path()]
-                max_value = value_tmp
-            if value_tmp <= min_value:
-                if value_tmp == min_value:
-                    maxmin["min"].append(node.get_path())
-                else:
-                    maxmin["min"] = [value_tmp, node.get_path()]
-                min_value =value_tmp
+            if head_color == Base.COLOR_RED:
+                if value_tmp >= max_value:
+                    if value_tmp == max_value:
+                        nodelist.append(node)
+                    else:
+                        nodelist = [node]
+                    max_value = value_tmp
+            else:
+                if value_tmp <= min_value:
+                    if value_tmp == min_value:
+                        nodelist.append(node)
+                    else:
+                        nodelist = [node]
+                    min_value =value_tmp
 
-
-        def travel_func(node):
+        ##################
+        print(">>> avilable steps:")
+        for node in nodelist:
+            for index in range(calc_deep+step_deep-1):
+                node = node.get_parent()
             chessboard = node.get_data()
             board_fmt = chessboard.formatBoard()
-            value_all = ai_value.chessman_get_value_all(board_fmt)
-            print("deep:", node.get_deep(), "path:", node.get_path(), "value:", value_all)
+            print(">>>step:")
             for i in range(10):
                 print(board_fmt[i])
-            print("")
-        #  mtree.travel(func=travel_func)
-
-        print(maxmin)
-        path = []
-        if board.curStepColor == Base.COLOR_RED:
-            path = maxmin["max"][1]
-        else:
-            path = maxmin["min"][1]
-
-        ##################
-        node = mtree.search(path)
-        chessboard = node.get_data()
-        board_fmt = chessboard.formatBoard()
-        print("step--->:", node.get_path())
-        for i in range(10):
-            print(board_fmt[i])
-
-        node = node.get_parent()
-        chessboard = node.get_data()
-        board_fmt = chessboard.formatBoard()
-        print("step--->:", node.get_path())
-        for i in range(10):
-            print(board_fmt[i])
-
-        node = node.get_parent()
-        chessboard = node.get_data()
-        board_fmt = chessboard.formatBoard()
-        print("step--->:", node.get_path())
-        for i in range(10):
-            print(board_fmt[i])
         ##################
 
-        node = mtree.search([path[0]])
-        chessboard = node.get_data()
-        board_fmt = chessboard.formatBoard()
-        print("\n\n")
-        for i in range(10):
-            print(board_fmt[i])
+        # 随机选择一种走法
+        node = random.choice(nodelist)
+        for index in range(calc_deep+step_deep-1):
+            node = node.get_parent()
 
-        #  board.chessmanChoose(window, chessboard.curRow, chessboard.curCol)
+        # 走棋
+        window.saveBorad(board.board)
+        board.board = chessboard.board
         if board.curStepColor == Base.COLOR_RED:
             board.curStepColor = Base.COLOR_BLACK
         else:
             board.curStepColor = Base.COLOR_RED
-        board.board = chessboard.board
         board.moveSteps = 0
-
-        number = 0
-        def travel_print(node):
-            nonlocal number
-            number = number + 1
-            print(">>>> number:", number)
-        #  mtree.travel(func=travel_print)
+        board.curRow = -1
+        board.curCol = -1

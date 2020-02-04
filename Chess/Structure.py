@@ -132,7 +132,7 @@ class MultiTree(object):
         height = 0
         def travel_func(node):
             nonlocal height
-            length = len(node.get_child())
+            length = len(node.get_path())
             if length > height:
                 height = length
         self.travel(func=travel_func)

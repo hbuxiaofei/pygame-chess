@@ -61,7 +61,7 @@ class ChessWindow(object):
         if self.stack.size() == 1:
             chessboard.resetBorad()
         elif self.stack.size() >= 2:
-            # 回退两步
+            # 回退一个回合/两步
             self.stack.pop()
             chessboard.board = self.stack.pop()
 
@@ -184,6 +184,11 @@ class ChessBoard(object):
                 top = self.curRow * BOARD_GAP + BOARD_TOP
                 win.window.blit(win.markImg, (left, top))
 
+    def aiChessmanChoose(self, row, col):
+        ''' ai 选中棋子 '''
+        self.curRow = row
+        self.curCol = col
+        self.moveSteps = 1
 
     def redrawBorad(self, win):
         ''' 根据每个单元格对应的棋子重绘棋盘 '''
@@ -366,6 +371,22 @@ class ChessBoard(object):
                         return False
         return True
 
+    def aiMoveChess(self, rowTo, colTo):
+        chessman = self.board[(self.curRow, self.curCol)]
+        chessman.row = rowTo
+        chessman.col = colTo
+        self.board[(rowTo, colTo)] = chessman
+
+        self.board.pop((self.curRow, self.curCol))
+        self.curRow = -1
+        self.curCol = -1
+        self.moveSteps = 0
+        # 换对方下棋
+        if self.curStepColor == Base.COLOR_BLACK:
+            self.curStepColor = Base.COLOR_RED
+        else:
+            self.curStepColor = Base.COLOR_BLACK
+
     def moveChess(self, win, rowTo, colTo):
         ''' 走棋判断,完成走棋,重绘棋盘 '''
 
@@ -397,7 +418,6 @@ class ChessBoard(object):
 
             # 走棋
             win.saveBorad(self.board)
-
 
             # 兵过河
             if chessman.kind == Base.KIND_BING:
