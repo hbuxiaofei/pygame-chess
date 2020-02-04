@@ -3,9 +3,9 @@ import sys, string, os, copy
 import datetime
 import pygame
 
+from Common import Structure
 from Chess import Base
 from Chess import Global
-from Chess import Structure
 from Chess import Operate
 
 # 窗口宽度

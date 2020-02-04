@@ -4,9 +4,9 @@ import pygame
 import copy
 import random
 
+from Common import Structure
 from Chess import Board
 from Chess import Base
-from Chess import Structure
 from ai import value as ai_value
 
 button_list = []
