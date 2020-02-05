@@ -68,9 +68,10 @@ class Chessman(object):
         return Global.load_image(filename)
 
     def printInfo(self):
-        arrKind = ('ju', 'ma', 'xiang', 'shi', 'jiang', 'pao', 'bing', 'None')
+        arrKind = [['C', 'M', 'X', 'S', 'J', 'P', 'Z'],
+                   ['c', 'm', 'x', 's', 'j', 'p', 'z']]
         arrColor = ('red ', 'black ')
-        info = arrColor[self.color] + arrKind[self.kind]
+        info = arrColor[self.color] + arrKind[self.color][self.kind]
         return info
 
     def getMovePoints(self):

@@ -65,6 +65,7 @@ class ChessWindow(object):
             # 回退一个回合/两步
             self.stack.pop()
             chessboard.board = self.stack.pop()
+        chessboard.moveSteps = 0
 
     def saveBorad(self, board):
         board_save = copy.deepcopy(board)
@@ -85,7 +86,7 @@ class ChessBoard(object):
     def __init__(self):
         ''' 初始化 '''
 
-        # 走棋步骤: 0-选择棋子  1-移动棋子
+        # 走棋步骤: 0:选择棋子  1:移动棋子  -1:暂停走棋
         self.moveSteps = 0
 
         # 当前要走棋的棋子颜色,初始化为红色
@@ -99,6 +100,9 @@ class ChessBoard(object):
 
         # 棋盘重置
         self.resetBorad()
+
+    def is_stop(self):
+        return self.moveSteps < 0
 
     def reverseBoard(self):
         """ 反转棋盘 """
@@ -177,10 +181,11 @@ class ChessBoard(object):
 
         if row >= 0 and col >= 0 and (row, col) in self.board.keys():
             if self.board[(row, col)] != None:
+                if self.moveSteps >= 0:
+                    self.moveSteps = 1
+
                 self.curRow = row
                 self.curCol = col
-                self.moveSteps = 1
-
                 left = self.curCol * BOARD_GAP + BOARD_LEFT
                 top = self.curRow * BOARD_GAP + BOARD_TOP
                 win.window.blit(win.markImg, (left, top))
@@ -206,6 +211,15 @@ class ChessBoard(object):
                 continue
             win.window.blit(image, (left, top))
             if self.curRow == chessman.row and self.curCol == chessman.col:
+                win.window.blit(win.markImg, (left, top))
+
+        # 显示上步走法
+        if win.stack.size() > 0:
+            stack_top = win.stack.peek()
+            pos_change = chessboard_get_step_by_board(stack_top, self.board)
+            for pos in pos_change:
+                top = pos[0] * BOARD_GAP + BOARD_TOP
+                left = pos[1] * BOARD_GAP + BOARD_LEFT
                 win.window.blit(win.markImg, (left, top))
 
         # 提示可走路径
@@ -255,7 +269,6 @@ class ChessBoard(object):
         for pos in chessman.getMovePoints():
             if self.chessmanTryMove(pos[0], pos[1]) == True:
                 points.append(pos)
-        #  print(points)
         return points
 
     def chessmanTryMove(self, rowTo, colTo):
@@ -395,15 +408,15 @@ class ChessBoard(object):
     def moveChess(self, win, rowTo, colTo):
         ''' 走棋判断,完成走棋,重绘棋盘 '''
 
-        if 0 == self.moveChessColorJudge(win, rowTo, colTo) and 0 == self.moveSteps:
-            # 该对方走棋
-            return 0
-
-        if 0 == self.moveSteps:
+        if 0 >= self.moveSteps:
+            # 该对方选择
+            if 0 == self.moveSteps and 0 == self.moveChessColorJudge(win, rowTo, colTo):
+                return 0
             # 选择棋子
             self.chessmanChoose(win, rowTo, colTo)
             return 0
-        else:
+        elif 1 == self.moveSteps:
+
             chessman = None
             if (self.curRow, self.curCol) in self.board.keys():
                 chessman = self.board[(self.curRow, self.curCol)]
@@ -413,21 +426,25 @@ class ChessBoard(object):
             if (rowTo, colTo) in self.board.keys():
                 chessmanTo = self.board[(rowTo, colTo)]
                 if chessmanTo != None and chessman.color == chessmanTo.color:
+                    # 不能走到自己棋子上
                     self.chessmanChoose(win, rowTo, colTo)
                     return 0
 
-
             # 判断是否能走棋
             if self.chessmanTryMove(rowTo, colTo) == False:
+                # 目标在对方棋子上, 提示该我方走棋
+                self.moveChessColorJudge(win, rowTo, colTo)
                 return 0
 
-            # 走棋
+            # 保存当前棋盘
             win.saveBorad(self.board)
 
             # 兵过河
             if chessman.kind == Base.KIND_BING:
                 if (4 == chessman.row and 5 == rowTo) or (5 == chessman.row and 4 == rowTo):
                     chessman.riverCrossed = 1
+
+            # 走棋
             chessman.row = rowTo
             chessman.col = colTo
             self.board[(rowTo, colTo)] = chessman
@@ -449,7 +466,7 @@ class ChessBoard(object):
                     win.tipInfo = ('game over,red win!')
                 else :
                     win.tipInfo = ('game over,black win!')
-                self.resetBorad()
+                self.moveSteps = -1
 
             return 1
 
@@ -472,11 +489,47 @@ def get_all_possible_steps(chessboard):
     return points
 
 
+def chessboard_get_step_by_board(cur_board, to_board):
+    pos_change = []
+    cur_pos = list(set(cur_board).difference(set(to_board)))
+    if len(cur_pos) == 1:
+        pos_change = pos_change + cur_pos
+    else:
+        return pos_change
+
+    to_pos = list(set(to_board).difference(set(cur_board)))
+    if len(to_pos) == 1:
+        pos_change = pos_change + to_pos
+    elif len(to_pos) == 0:
+        cur_board_copy = copy.deepcopy(cur_board)
+        cur_board_copy.pop(cur_pos[0])
+
+        # 吃子情况
+        for (row, col) in cur_board_copy:
+            chessman_cur = cur_board_copy[(row, col)]
+            chessman_to = to_board[(row, col)]
+            if chessman_cur.color != chessman_to.color:
+                to_pos = [(row, col)]
+                pos_change = pos_change + to_pos
+                break
+    else:
+        return pos_change
+
+    return pos_change
+
+
 def chessboard_evaluate(chessboard):
     board_fmt = chessboard.formatBoard()
     value_all = ai_value.chessman_get_value_all(board_fmt)
     return value_all
 
 
-def chessboard_ai_move(chessboard, cur_pos, to_pos):
+def chessboard_ai_move(win, chessboard, cur_pos, to_pos):
+    if win != None:
+        win.saveBorad(chessboard.board)
+
     chessboard.aiMoveChess(cur_pos, to_pos)
+
+    if win != None:
+        chessman = chessboard.board[to_pos]
+        win.tipInfo = ('last moving chessman: %s,row:%d,col:%d' % (chessman.printInfo(), to_pos[0], to_pos[1]))

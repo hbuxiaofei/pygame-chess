@@ -31,7 +31,7 @@ class TreeNode(object):
     """ 树节点
     """
 
-    MAX_CHILD_LIST = 1000
+    MAX_CHILD_LIST = 1000000
 
     def __init__(self, data):
         self._deep = 0

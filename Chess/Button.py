@@ -99,7 +99,6 @@ class GuiButtonBox(object):
         for button in self._button_list:
             button.refresh()
 
-
     def process(self, pos, mouse):
         for button in self._button_list:
             button.process(pos, mouse)
@@ -131,6 +130,10 @@ def cb_back_prompt(args=None):
         board = args["board"]
         window = args["window"]
 
+        # 暂停走棋
+        if board.is_stop():
+            return
+
         # 回合数, 总步数 = 回合数 * 2
         depth = 3
 
@@ -153,12 +156,5 @@ def cb_back_prompt(args=None):
         chessboard = node_first.get_data()
 
         # 走棋
-        window.saveBorad(board.board)
-        board.board = chessboard.board
-        if board.curStepColor == Base.COLOR_RED:
-            board.curStepColor = Base.COLOR_BLACK
-        else:
-            board.curStepColor = Base.COLOR_RED
-        board.moveSteps = 0
-        board.curRow = -1
-        board.curCol = -1
+        pos_change = Board.chessboard_get_step_by_board(board.board, chessboard.board)
+        Board.chessboard_ai_move(window, board, pos_change[0], pos_change[1])

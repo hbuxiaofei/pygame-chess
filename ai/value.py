@@ -178,7 +178,7 @@ def chessman_create_minimax_tree(board, depth, eval_fn,
                 for cur_pos in points.keys():
                     for to_pos in points[cur_pos]:
                         chessboard_copy = copy.deepcopy(node.get_data())
-                        do_move_fn(chessboard_copy, cur_pos, to_pos)
+                        do_move_fn(None, chessboard_copy, cur_pos, to_pos)
                         child = Structure.TreeNode(chessboard_copy)
                         node.add(child)
             else:
@@ -192,7 +192,7 @@ def chessman_create_minimax_tree(board, depth, eval_fn,
                     # 遍历每个子粒的所有走法
                     for to_pos in points[cur_pos]:
                         chessboard_copy = copy.deepcopy(node.get_data())
-                        do_move_fn(chessboard_copy, cur_pos, to_pos)
+                        do_move_fn(None, chessboard_copy, cur_pos, to_pos)
 
                         # 评价所有子粒价值=(red_value, black_value)
                         value_all = eval_fn(chessboard_copy)
