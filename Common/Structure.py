@@ -75,6 +75,17 @@ class TreeNode(object):
             node.set_path(path + [length+1])
             self._children.append(node)
 
+    def get_elder(self):
+        elder_list = []
+
+        node = self
+        while node._parent != None:
+            node = node._parent
+            elder_list.append(node)
+
+        elder_list.reverse()
+        return elder_list
+
 
 class MultiTree(object):
     """ 多叉树
@@ -158,7 +169,6 @@ class MultiTree(object):
                         q.put(child)
                     else:
                         is_enable_put = False
-
         return nodelist
 
 

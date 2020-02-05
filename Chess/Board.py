@@ -7,6 +7,7 @@ from Common import Structure
 from Chess import Base
 from Chess import Global
 from Chess import Operate
+from ai import value as ai_value
 
 # 窗口宽度
 WINDOW_WIDTH = 780
@@ -183,12 +184,6 @@ class ChessBoard(object):
                 left = self.curCol * BOARD_GAP + BOARD_LEFT
                 top = self.curRow * BOARD_GAP + BOARD_TOP
                 win.window.blit(win.markImg, (left, top))
-
-    def aiChessmanChoose(self, row, col):
-        ''' ai 选中棋子 '''
-        self.curRow = row
-        self.curCol = col
-        self.moveSteps = 1
 
     def redrawBorad(self, win):
         ''' 根据每个单元格对应的棋子重绘棋盘 '''
@@ -371,7 +366,17 @@ class ChessBoard(object):
                         return False
         return True
 
-    def aiMoveChess(self, rowTo, colTo):
+    def aiMoveChess(self, cur_pos, to_pos):
+        ''' ai走棋, 简化了走棋的判断'''
+        (curRow, curCol) = cur_pos
+        (rowTo, colTo) = to_pos
+
+        # 选中棋子
+        self.curRow = curRow
+        self.curCol = curCol
+        self.moveSteps = 1
+
+        # 走棋
         chessman = self.board[(self.curRow, self.curCol)]
         chessman.row = rowTo
         chessman.col = colTo
@@ -465,3 +470,13 @@ def get_all_possible_steps(chessboard):
             chessboard_copy.curCol = col
             points[(row, col)] = chessboard_copy.chessmanGetPoints()
     return points
+
+
+def chessboard_evaluate(chessboard):
+    board_fmt = chessboard.formatBoard()
+    value_all = ai_value.chessman_get_value_all(board_fmt)
+    return value_all
+
+
+def chessboard_ai_move(chessboard, cur_pos, to_pos):
+    chessboard.aiMoveChess(cur_pos, to_pos)

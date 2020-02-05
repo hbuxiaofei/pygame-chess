@@ -73,13 +73,13 @@ class GuiButtonBox(object):
 
         # 翻转棋盘按钮 BOARD_COL, BOARD_ROW + BOARD_HEIGHT
         btn = GuiButton(self._win, "Reverse",
-                self._col, self._row,
+                self._col, self._row + 40,
                 101, 28, cb_reverse_board, args)
         self._button_list.append(btn)
 
         # 重置棋盘按钮
         btn = GuiButton(self._win, "Reset",
-                self._col, self._row + 40,
+                self._col, self._row,
                 101, 28, cb_reset_board, args)
         self._button_list.append(btn)
 
@@ -125,123 +125,32 @@ def cb_back_board(args=None):
         chessboard = args["board"]
         args["window"].backBorad(chessboard)
 
+
 def cb_back_prompt(args=None):
     if args != None and "board" in args and "window" in args:
         board = args["board"]
         window = args["window"]
 
-        # 保存当前局面为根节点
-        chessboard_copy = copy.deepcopy(board)
-        mtree = Structure.MultiTree(chessboard_copy)
-        mtree_head = mtree.get_head()
+        # 回合数, 总步数 = 回合数 * 2
+        depth = 3
 
-        # 回合预测深度
-        step_deep = 3
-        for deep in range(step_deep*2):
-            nodelist = mtree.get_nodelist_by_deep(deep)
-            max_value_last = sys.maxsize
-            min_value_last = -sys.maxsize
-            for node in nodelist:
-                chessboard = node.get_data()
-                curColor = chessboard.curStepColor
-                points = Board.get_all_possible_steps(chessboard)
-                if deep % 2 == 0:
-                    for cur_pos in points.keys():
-                        for to_pos in points[cur_pos]:
-                            chessboard_copy = copy.deepcopy(node.get_data())
-                            chessboard_copy.aiChessmanChoose(cur_pos[0], cur_pos[1])
-                            chessboard_copy.aiMoveChess(to_pos[0], to_pos[1])
-                            child = Structure.TreeNode(chessboard_copy)
-                            node.add(child)
-                else:
-                    chessboard_child_list = []
-                    max_value = -sys.maxsize
-                    min_value = sys.maxsize
-                    # 是否剪枝
-                    is_pruning = False
-                    # 遍历所有子粒
-                    for cur_pos in points.keys():
-                        # 遍历每个子粒的所有走法
-                        for to_pos in points[cur_pos]:
-                            chessboard_copy = copy.deepcopy(node.get_data())
-                            chessboard_copy.aiChessmanChoose(cur_pos[0], cur_pos[1])
-                            chessboard_copy.aiMoveChess(to_pos[0], to_pos[1])
-
-                            board_fmt = chessboard_copy.formatBoard()
-                            value_all = ai_value.chessman_get_value_all(board_fmt)
-
-                            value_tmp = value_all[0] - value_all[1]
-                            if curColor == Base.COLOR_RED:
-                                if value_tmp > max_value_last:
-                                    is_pruning = True
-                                    chessboard_child_list = []
-                                    break
-                                if value_tmp >= max_value:
-                                    if value_tmp == max_value:
-                                        chessboard_child_list.append(chessboard_copy)
-                                    else:
-                                        chessboard_child_list = [chessboard_copy]
-                                    max_value = value_tmp
-                            else:
-                                if value_tmp < min_value_last:
-                                    is_pruning = True
-                                    chessboard_child_list = []
-                                    break
-                                if value_tmp <= min_value:
-                                    if value_tmp == min_value:
-                                        chessboard_child_list.append(chessboard_copy)
-                                    else:
-                                        chessboard_child_list = [chessboard_copy]
-                                    min_value =value_tmp
-                        if is_pruning:
-                            break
-                    for chessboard_child in chessboard_child_list:
-                        child = Structure.TreeNode(chessboard_child)
-                        node.add(child)
-                        max_value_last = max_value
-                        min_value_last = min_value
+        # 创建minimax树
+        mtree = ai_value.chessman_create_minimax_tree(board, depth,
+                Board.chessboard_evaluate,
+                Board.get_all_possible_steps,
+                Board.chessboard_ai_move,
+                is_max=(board.curStepColor == Base.COLOR_RED))
 
         # 取得所有最佳招法列表
-        nodelist = []
-        bottom_nodelist = mtree.get_nodelist_by_deep(step_deep*2)
-        head_color = mtree_head.get_data().curStepColor
-        for node in bottom_nodelist:
-            chessboard = node.get_data()
-            board_fmt = chessboard.formatBoard()
-            value_all = ai_value.chessman_get_value_all(board_fmt)
-            value_tmp = value_all[0] - value_all[1]
-            if head_color == Base.COLOR_RED:
-                if value_tmp >= max_value:
-                    if value_tmp == max_value:
-                        nodelist.append(node)
-                    else:
-                        nodelist = [node]
-                    max_value = value_tmp
-            else:
-                if value_tmp <= min_value:
-                    if value_tmp == min_value:
-                        nodelist.append(node)
-                    else:
-                        nodelist = [node]
-                    min_value =value_tmp
-
-        ##################
-        print(">>> avilable steps:")
-        for node in nodelist:
-            for index in range(step_deep*2-1):
-                node = node.get_parent()
-            chessboard = node.get_data()
-            board_fmt = chessboard.formatBoard()
-            print(">>>step:")
-            for i in range(10):
-                print(board_fmt[i])
-        ##################
+        nodelist = ai_value.chessman_get_minimax_moves(mtree,
+                Board.chessboard_evaluate,
+                is_max=(board.curStepColor == Base.COLOR_RED))
 
         # 随机选择一种走法
-        node = random.choice(nodelist)
-        for index in range(step_deep*2-1):
-            node = node.get_parent()
-        chessboard = node.get_data()
+        node_last = random.choice(nodelist)
+        move_path = node_last.get_elder()
+        node_first = move_path[1]
+        chessboard = node_first.get_data()
 
         # 走棋
         window.saveBorad(board.board)

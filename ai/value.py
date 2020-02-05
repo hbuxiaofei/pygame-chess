@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
+import copy
+from Common import Structure
 
+# 子粒价值表
 chessman_value = {
 	"C":[
 		[206, 208, 207, 213, 214, 213, 207, 208, 206],
@@ -118,19 +122,18 @@ def chessman_get_value(name, row, col, isRed=True):
     return chessman[row][col]
 
 
-'''
-['c', 'm', 'x', 's', 'j', 's', 'x', 'm', 'c']
-[0, 0, 0, 0, 0, 0, 0, 0, 0]
-[0, 'p', 0, 0, 0, 0, 0, 'p', 0]
-['z', 0, 'z', 0, 'z', 0, 'z', 0, 'z']
-[0, 0, 0, 0, 0, 0, 0, 0, 0]
-[0, 0, 0, 0, 0, 0, 0, 0, 0]
-['Z', 0, 'Z', 0, 'Z', 0, 'Z', 0, 'Z']
-[0, 'P', 0, 0, 0, 0, 0, 'P', 0]
-[0, 0, 0, 0, 0, 0, 0, 0, 0]
-['C', 'M', 'X', 'S', 'J', 'S', 'X', 'M', 'C']
-'''
 def chessman_get_value_all(board=None):
+    # board:
+    # ['c', 'm', 'x', 's', 'j', 's', 'x', 'm', 'c']
+    # [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    # [0, 'p', 0, 0, 0, 0, 0, 'p', 0]
+    # ['z', 0, 'z', 0, 'z', 0, 'z', 0, 'z']
+    # [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    # [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    # ['Z', 0, 'Z', 0, 'Z', 0, 'Z', 0, 'Z']
+    # [0, 'P', 0, 0, 0, 0, 0, 'P', 0]
+    # [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    # ['C', 'M', 'X', 'S', 'J', 'S', 'X', 'M', 'C']
     red_value = 0
     black_value = 0
     kind_list = ['C', 'M', 'X', 'S', 'J', 'P', 'Z', 'c', 'm', 'x', 's', 'j', 'p', 'z']
@@ -145,7 +148,119 @@ def chessman_get_value_all(board=None):
     return (red_value, black_value)
 
 
-if __name__ == "__main__":
+def chessman_create_minimax_tree(board, depth, eval_fn,
+        get_next_moves_fn, do_move_fn, is_max=True):
+
+    chessboard_copy = copy.deepcopy(board)
+    mtree = Structure.MultiTree(chessboard_copy)
+    mtree_head = mtree.get_head()
+
+    # 回合数深度
+    step_deep = depth
+
+    # 广度优先遍历 BFS
+    for deep in range(step_deep*2):
+        # 获取最后一层所有节点
+        nodelist = mtree.get_nodelist_by_deep(deep)
+        max_value_last = sys.maxsize
+        min_value_last = -sys.maxsize
+        for node in nodelist:
+            chessboard = node.get_data()
+
+            # 获取下一步所有可选走法
+            #  {(9, 6): [(7, 4), (7, 8)],
+            #   (9, 5): [(8, 4)],
+            #   (9, 4): [(8, 4)],
+            #   (9, 3): [(8, 4)],
+            #   (9, 2): [(7, 0), (7, 4)]}
+            points = get_next_moves_fn(chessboard)
+            if deep % 2 == 0:
+                for cur_pos in points.keys():
+                    for to_pos in points[cur_pos]:
+                        chessboard_copy = copy.deepcopy(node.get_data())
+                        do_move_fn(chessboard_copy, cur_pos, to_pos)
+                        child = Structure.TreeNode(chessboard_copy)
+                        node.add(child)
+            else:
+                chessboard_child_list = []
+                max_value = -sys.maxsize
+                min_value = sys.maxsize
+                # 是否剪枝
+                is_pruning = False
+                # 遍历所有子粒
+                for cur_pos in points.keys():
+                    # 遍历每个子粒的所有走法
+                    for to_pos in points[cur_pos]:
+                        chessboard_copy = copy.deepcopy(node.get_data())
+                        do_move_fn(chessboard_copy, cur_pos, to_pos)
+
+                        # 评价所有子粒价值=(red_value, black_value)
+                        value_all = eval_fn(chessboard_copy)
+                        value_tmp = value_all[0] - value_all[1]
+                        if is_max == True:
+                            if value_tmp > max_value_last:
+                                is_pruning = True
+                                chessboard_child_list = []
+                                break
+                            if value_tmp >= max_value:
+                                if value_tmp == max_value:
+                                    chessboard_child_list.append(chessboard_copy)
+                                else:
+                                    chessboard_child_list = [chessboard_copy]
+                                max_value = value_tmp
+                        else:
+                            if value_tmp < min_value_last:
+                                is_pruning = True
+                                chessboard_child_list = []
+                                break
+                            if value_tmp <= min_value:
+                                if value_tmp == min_value:
+                                    chessboard_child_list.append(chessboard_copy)
+                                else:
+                                    chessboard_child_list = [chessboard_copy]
+                                min_value = value_tmp
+                    if is_pruning:
+                        break
+                for chessboard_child in chessboard_child_list:
+                    child = Structure.TreeNode(chessboard_child)
+                    node.add(child)
+                    max_value_last = max_value
+                    min_value_last = min_value
+        is_max = (not is_max)
+    return mtree
+
+
+def chessman_get_minimax_moves(mtree, eval_fn, is_max=True):
+    nodelist = []
+    mtree_height = mtree.get_height()
+    bottom_nodelist = mtree.get_nodelist_by_deep(mtree_height)
+
+    max_value = -sys.maxsize
+    min_value = sys.maxsize
+    for node in bottom_nodelist:
+        chessboard = node.get_data()
+
+        value_all = eval_fn(chessboard)
+        value_tmp = value_all[0] - value_all[1]
+        if is_max == True:
+            if value_tmp >= max_value:
+                if value_tmp == max_value:
+                    nodelist.append(node)
+                else:
+                    nodelist = [node]
+                    max_value = value_tmp
+        else:
+            if value_tmp <= min_value:
+                if value_tmp == min_value:
+                    nodelist.append(node)
+                else:
+                    nodelist = [node]
+                    min_value =value_tmp
+
+    return nodelist
+
+
+def test_main():
     print("start...")
     row = 0
     col = 0
@@ -157,3 +272,6 @@ if __name__ == "__main__":
     col = 0
     print("Z(%d, %d) = %d" % (row, col, chessman_get_value("Z", row, col, True)))
 
+
+if __name__ == "__main__":
+    test_main()
