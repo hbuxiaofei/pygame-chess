@@ -468,6 +468,10 @@ class ChessBoard(object):
                     win.tipInfo = ('game over,black win!')
                 self.moveSteps = -1
 
+            board_fmt = self.formatBoard()
+            value_all = ai_value.chessman_get_value_all(board_fmt)
+            print("human:", value_all)
+
             return 1
 
 
@@ -531,5 +535,6 @@ def chessboard_ai_move(win, chessboard, cur_pos, to_pos):
     chessboard.aiMoveChess(cur_pos, to_pos)
 
     if win != None:
+        print("ai:", chessboard_evaluate(chessboard))
         chessman = chessboard.board[to_pos]
         win.tipInfo = ('last moving chessman: %s,row:%d,col:%d' % (chessman.printInfo(), to_pos[0], to_pos[1]))

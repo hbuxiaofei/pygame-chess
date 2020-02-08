@@ -135,7 +135,7 @@ def cb_back_prompt(args=None):
             return
 
         # 回合数, 总步数 = 回合数 * 2
-        depth = 3
+        depth = 5
 
         # 创建minimax树
         mtree = ai_value.chessman_create_minimax_tree(board, depth,
