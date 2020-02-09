@@ -125,7 +125,7 @@ class ChessBoard(object):
         马 下一步可走位置
         """
         n_list = []
-        sideTag = 16 + self.side * 16  # 走棋方，红方16，黑方32
+        sidetag = 16 + self.side * 16  # 走棋方，红方16，黑方32
         for k in range(8):        # 8个方向
             n = p + KnightDir[k]  # n为新的可能走到的位置
             if (LegalPosition[self.side][n] & PositionMask[3]): # 马将对应下标为3
@@ -197,40 +197,40 @@ class ChessBoard(object):
         return n_list
 
 
-def _int2fen_char(a):
+def int2fen_char(i):
     """  棋子整数值转换成字符表示 """
-    if (a < 32):
-        if a == 16:
+    if (i < 32):
+        if i == 16:
             return 'K'
-        elif a == 17 or a == 18:
+        elif i == 17 or i == 18:
             return 'A'
-        elif a == 19 or a == 20:
+        elif i == 19 or i == 20:
             return 'B'
-        elif a == 21 or a == 22:
+        elif i == 21 or i == 22:
             return 'N'
-        elif a == 23 or a == 24:
+        elif i == 23 or i == 24:
             return 'R'
-        elif a == 25 or a == 26:
+        elif i == 25 or i == 26:
             return 'C'
-        elif a == 27 or a == 28 or a == 29 or a == 30 or a == 31:
+        elif i == 27 or i == 28 or i == 29 or i == 30 or i == 31:
             return 'P'
         else:
             return 0
     else:
-        a = a - 16
-        if a == 16:
+        i = i - 16
+        if i == 16:
             return 'k'
-        elif a == 17 or a == 18:
+        elif i == 17 or i == 18:
             return 'a'
-        elif a == 19 or a == 20:
+        elif i == 19 or i == 20:
             return 'b'
-        elif a == 21 or a == 22:
+        elif i == 21 or i == 22:
             return 'n'
-        elif a == 23 or a == 24:
+        elif i == 23 or i == 24:
             return 'r'
-        elif a == 25 or a == 26:
+        elif i == 25 or i == 26:
             return 'c'
-        elif a == 27 or a == 28 or a == 29 or a == 30 or a == 31:
+        elif i == 27 or i == 28 or i == 29 or i == 30 or i == 31:
             return 'p'
         else:
             return 0
@@ -338,7 +338,7 @@ def get_fen_by_array(bd_array, side):
                     fen_list[index] = chr(k + ord('0'))
                     index = index + 1
                     k = 0
-                fen_list[index] = _int2fen_char(pc)
+                fen_list[index] = int2fen_char(pc)
                 index = index + 1
             else:
                 k = k + 1

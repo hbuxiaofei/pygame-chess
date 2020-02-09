@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from chessboard import *
+from chess.chessboard import *
 
 
 class Chess(object):
@@ -18,22 +18,39 @@ class Chess(object):
 
         self.bd.side = get_side_by_fen(fen)
 
+    def get_2d_board(self):
+        rows = 10
+        cols= 9
+        array_2d = [[0] * cols for i in range(rows)]
+        for index in range(16, len(self.piece)):
+            k = self.piece[index]
+            if k:
+                i = k // 16
+                j = k % 16
+                array_2d[i-3][j-3] = index
+        return array_2d
 
-    def check_move(self, m):
-        side = self.bd.side
-        board = self.bd.board
-        piece = self.piece
-
-        from_pos = m.from_pos
-        dest_pos = m.to_pos
-
+    def is_match_side_pc(self, side, pc):
         sidetag = 16 + side * 16
-        pc = board[from_pos]
 
         # 走方是否正确
-        if (pc < sidetag) or (pc >= sidetag + 16):
+        if (pc >= sidetag) and (pc < sidetag + 16):
+            return True
+        else:
             return False
 
+    def get_can_move_list(self, pos):
+        board = self.bd.board
+        from_pos = pos
+        pc = board[from_pos]
+
+        sidetag = 0
+        if (pc >= 16) and (pc < 16 + 16):
+            sidetag = 16
+        else:
+            sidetag = 16 + 16
+
+        n_list = []
         i = pc - sidetag
         n_list = []
         if (i == 0):   # 将
@@ -50,7 +67,22 @@ class Chess(object):
             n_list = self.bd.cannon_next_positions(from_pos)
         elif i == 11 or i == 12 or i == 13 or i == 14 or i == 15: # 兵
             n_list = self.bd.pawnMove_next_positions(from_pos)
+        return n_list
 
+    def check_move(self, m):
+        side = self.bd.side
+        board = self.bd.board
+
+        from_pos = m.from_pos
+        dest_pos = m.to_pos
+
+        pc = board[from_pos]
+
+        # 走方是否正确
+        if not self.is_match_side_pc(side, pc):
+            return False
+        # 目的位置是否在可走位置上
+        n_list = self.get_can_move_list(from_pos)
         if dest_pos in n_list:
             return True
         else:
@@ -403,6 +435,11 @@ class Chess(object):
                             mv_array.append(mv)
         return mv_array
 
+    def get_side(self):
+        return self.bd.side
+
+    def get_board(self):
+        return self.bd.board
 
     def output_piece(self):
         """ 输出棋子数组 """
@@ -430,3 +467,4 @@ if __name__ == "__main__":
         print(all_move_array[i].from_pos, all_move_array[i].to_pos, end='')
         print("(%d, %d)" %(chs.bd.board[all_move_array[i].from_pos], chs.bd.board[all_move_array[i].to_pos]))
     chs.output_piece()
+    chs.get_2d_board()
