@@ -4,6 +4,8 @@ import pygame
 import copy
 import random
 
+from chess.chessboard import get_fen_by_array
+from chess.chessboard import ChessboardMove
 
 # 按钮弹起颜色
 BUTTON_UP_COLOR = (238,232,170)
@@ -32,9 +34,23 @@ def _cb_back_board(args=None):
 
 
 def _cb_board_prompt(args=None):
-    if args != None and "window" in args:
+    if args != None and "window" in args and "engine" in args:
         window = args["window"]
+        engine = args["engine"]
         print("cb_board_prompt button")
+        print(engine.put("ucci"))
+        chess = window.get_chess()
+        cur_fen = get_fen_by_array(chess.get_board(), chess.get_side())
+
+        print(cur_fen)
+
+        (from_pos, to_pos) = engine.put("position fen " + cur_fen + " - - 0 1")
+
+        print(((from_pos//16)-3, (from_pos%16)-3), ((to_pos//16)-3, (to_pos%16)-3))
+        m = ChessboardMove()
+        m.from_pos = from_pos
+        m.to_pos = to_pos
+        chess.make_move(m)
 
 
 class GuiButton(object):

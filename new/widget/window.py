@@ -65,8 +65,11 @@ class ChessWindow(object):
         self.choose_can_move_pos = []
 
         # 象棋
-        fen = "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w"
+        fen = "rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1"
         self._chs = Chess(fen)
+
+    def get_chess(self):
+        return self._chs
 
     def _refresh_chessman(self):
         ''' 刷新所有棋子 '''

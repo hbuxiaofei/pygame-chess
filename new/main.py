@@ -5,7 +5,7 @@ from pygame.locals import *
 
 from widget.window import ChessWindow
 from widget.window import BOARD_TOP, BOARD_LEFT, BOARD_GAP
-
+from engine.entry import Engine
 
 def main():
     # 初始化
@@ -21,7 +21,7 @@ def main():
     chesswindow = ChessWindow()
 
     # 操作面板按钮初始化
-    args = {"window": chesswindow}
+    args = {"window": chesswindow, "engine": Engine()}
     chesswindow.oper_panel.button_init(args)
 
     chesswindow.redraw_borad()
@@ -53,7 +53,6 @@ def main():
             mouse = pygame.mouse.get_pressed()
             if (row >= 0 and row <= 9) and (col >= 0 and col <= 8): # 鼠标点击在棋盘内
                 if not mouse[0]:
-                    print("press: (%d, %d)" %(row, col))
                     chesswindow.move_chessman(row, col)
             else:
                 chesswindow.oper_panel.button_process((xPos, yPos), mouse)
