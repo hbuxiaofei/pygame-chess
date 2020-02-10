@@ -18,18 +18,6 @@ class Chess(object):
 
         self.bd.side = get_side_by_fen(fen)
 
-    def get_2d_board(self):
-        rows = 10
-        cols= 9
-        array_2d = [[0] * cols for i in range(rows)]
-        for index in range(16, len(self.piece)):
-            k = self.piece[index]
-            if k:
-                i = k // 16
-                j = k % 16
-                array_2d[i-3][j-3] = index
-        return array_2d
-
     def is_match_side_pc(self, side, pc):
         sidetag = 16 + side * 16
 
@@ -127,9 +115,10 @@ class Chess(object):
     def unmake_move(self):
         piece = self.piece
         board = self.bd.board
+        if len(self.movestack) <= 0:
+            return
 
         self.bd.change_side()
-
         p = self.movestack.pop()
         from_pos = p.from_pos
         dest_pos = p.to_pos
@@ -314,12 +303,12 @@ class Chess(object):
         board = self.bd.board
         side = self.bd.side
 
+        mv_array = []
         sidetag = 16 + 16 * side
         p = piece[sidetag] # 将的位置
         if (not p):
-            return 0
+            return mv_array
 
-        mv_array = []
         # 将的走法
         for k in range(4):       # 4个方向
             n = p + KingDir[k]   # n为新的可能走到的位置
@@ -467,4 +456,3 @@ if __name__ == "__main__":
         print(all_move_array[i].from_pos, all_move_array[i].to_pos, end='')
         print("(%d, %d)" %(chs.bd.board[all_move_array[i].from_pos], chs.bd.board[all_move_array[i].to_pos]))
     chs.output_piece()
-    chs.get_2d_board()

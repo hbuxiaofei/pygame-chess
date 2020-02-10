@@ -354,8 +354,8 @@ def get_fen_by_array(bd_array, side):
         fen_list[index] = 'w'
     else:
         fen_list[index] = 'b'
-
-    return ("".join(fen_list))
+    fen_string = ("".join(fen_list))
+    return fen_string.strip()
 
 
 def output_board_array(bd_array):

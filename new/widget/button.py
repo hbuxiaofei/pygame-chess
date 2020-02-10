@@ -20,18 +20,21 @@ BUTTON_TEXT_COLOR = (54,54,54)
 
 def _cb_reverse_board(args=None):
     if args != None and "window" in args:
-        print("cb_reverse_board button")
+        window = args["window"]
+        window.reverse_board()
 
 
 def _cb_reset_board(args=None):
     if args != None and "window" in args:
-        print("cb_reset_board button")
+        window = args["window"]
+        window.reset()
 
 
 def _cb_back_board(args=None):
     if args != None and "window" in args:
-        print("cb_back_board button")
-
+        window = args["window"]
+        chess = window.get_chess()
+        chess.unmake_move()
 
 def _cb_board_prompt(args=None):
     if args != None and "window" in args and "engine" in args:
@@ -42,11 +45,11 @@ def _cb_board_prompt(args=None):
         chess = window.get_chess()
         cur_fen = get_fen_by_array(chess.get_board(), chess.get_side())
 
-        print(cur_fen)
-
-        (from_pos, to_pos) = engine.put("position fen " + cur_fen + " - - 0 1")
-
-        print(((from_pos//16)-3, (from_pos%16)-3), ((to_pos//16)-3, (to_pos%16)-3))
+        len_movestack = len(chess.movestack)
+        round_num = len_movestack // 2 + 1
+        fen = "position fen " + cur_fen + " - - 0 " + str(round_num)
+        print(fen)
+        (from_pos, to_pos) = engine.put(fen)
         m = ChessboardMove()
         m.from_pos = from_pos
         m.to_pos = to_pos
